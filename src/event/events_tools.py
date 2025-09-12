@@ -163,7 +163,7 @@ class AgentMonitoringEventsMCPTools(BaseInstanaClient):
 
         Examples:
         Get details of a specific incident:
-           - event_id: "1a2b3c4d5e6f"
+        - event_id: "1a2b3c4d5e6f"
 
         Args:
             event_id: The ID of the event to retrieve
@@ -183,8 +183,14 @@ class AgentMonitoringEventsMCPTools(BaseInstanaClient):
             try:
                 result = api_client.get_event(event_id=event_id)
 
-                # Process the result
-                result_dict = self._process_result(result)
+                # New robust conversion to dict
+                if hasattr(result, "to_dict"):
+                    result_dict = result.to_dict()
+                elif isinstance(result, dict):
+                    result_dict = result
+                else:
+                    # Convert to dictionary using __dict__ or as a fallback, create a new dict with string representation
+                    result_dict = getattr(result, "__dict__", {"data": str(result)})
 
                 logger.debug(f"Successfully retrieved event with ID {event_id}")
                 return result_dict
