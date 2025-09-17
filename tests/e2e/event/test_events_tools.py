@@ -7,6 +7,8 @@ import sys
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
+from instana_client import api_client
+
 import pytest
 
 
@@ -998,14 +1000,16 @@ class TestAgentMonitoringEventsE2E:
         result = await client.get_issues(
             from_time=from_time,
             to_time=to_time,
-            size=10
+            size=10,
+            api_client=mock_api_client
         )
         # Verify the result
         assert isinstance(result, dict)
 
-        assert "analysis" in result
-        assert "time_range" in result
+        assert "events" in result
         assert "events_count" in result
+        assert "events_analyzed" in result
+        assert "summary" in result
 
 
     @pytest.mark.asyncio
@@ -1046,13 +1050,15 @@ class TestAgentMonitoringEventsE2E:
 
         result = await client.get_issues(
             time_range="last 24 hours",
-            max_events=10
+            max_events=10,
+            api_client=mock_api_client
         )
         # Verify the result
         assert isinstance(result, dict)
-        assert "analysis" in result
-        assert "time_range" in result
+        assert "events" in result
         assert "events_count" in result
+        assert "events_analyzed" in result
+        assert "summary" in result
        # assert "events_count" in result
 
     @pytest.mark.asyncio
@@ -1122,16 +1128,18 @@ class TestAgentMonitoringEventsE2E:
 
 
         # Test the method
-        result = await client.get_issues()
+        result = await client.get_issues(
+            api_client=mock_api_client
+        )
 
         # Print debug info
         print(f"DEBUG: Result: {result}")
 
         # Verify the result contains the expected analysis
         assert isinstance(result, dict)
-        assert "analysis" in result
+        assert "error" in result
         assert "time_range" in result
-        assert "events_count" in result
+        assert "API Error" in result["error"]
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
@@ -1194,15 +1202,16 @@ class TestAgentMonitoringEventsE2E:
         result = await client.get_incidents(
             from_time=from_time,
             to_time=to_time,
-            max_events=10
+            max_events=10,
+            api_client=mock_api_client
         )
 
         # Verify the result contains the expected analysis
         assert isinstance(result, dict)
-        assert "analysis" in result
-        assert "time_range" in result
+        assert "events" in result
         assert "events_count" in result
-
+        assert "events_analyzed" in result
+        assert "summary" in result
         #assert "events_count" in result
 
     @pytest.mark.asyncio
@@ -1250,14 +1259,16 @@ class TestAgentMonitoringEventsE2E:
         # Test the method with natural language time range
         result = await client.get_incidents(
             time_range="last 24 hours",
-            max_events=10
+            max_events=10,
+            api_client=mock_api_client
         )
 
         # Verify the result contains the expected analysis
         assert isinstance(result, dict)
-        assert "analysis" in result
-        assert "time_range" in result
+        assert "events" in result
         assert "events_count" in result
+        assert "events_analyzed" in result
+        assert "summary" in result
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
