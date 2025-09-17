@@ -6,8 +6,8 @@ This module provides agent monitoring events-specific MCP tools for Instana moni
 
 import json
 import logging
-import re
 import os
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
