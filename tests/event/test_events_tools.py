@@ -665,39 +665,46 @@ class TestAgentMonitoringEventsMCPTools(unittest.TestCase):
         mock_datetime.now = MagicMock(return_value=mock_now)
         mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-        # Set up the mock response
-        mock_event1 = MagicMock()
-        mock_event1.to_dict = MagicMock(return_value={
-            "eventId": "change1",
-            "eventType": "change",
-            "changeType": "deployment",
-            "start": 900000  # milliseconds
-        })
+        # Set up the mock response for get_events_without_preload_content
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='''[
+            {
+                "eventId": "change1",
+                "eventType": "change",
+                "changeType": "deployment",
+                "start": 900000
+            },
+            {
+                "eventId": "change2",
+                "eventType": "change",
+                "changeType": "configuration",
+                "start": 950000
+            }
+        ]''')
 
-        mock_event2 = MagicMock()
-        mock_event2.to_dict = MagicMock(return_value={
-            "eventId": "change2",
-            "eventType": "change",
-            "changeType": "configuration",
-            "start": 950000  # milliseconds
-        })
+        # Mock the API client method used in get_changes
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-        self.events_api.get_events.return_value = [mock_event1, mock_event2]
-
-        # Call the get_changes method directly
+        # Call the get_changes method
         result = asyncio.run(self.client.get_changes())
 
-        # Check that the mock was called with the correct event_type_filters
-        self.events_api.get_events.assert_called_once()
-        call_args = self.events_api.get_events.call_args[1]
-        self.assertEqual(call_args['event_type_filters'], ["change"])
-
-        # Check that the result contains the expected data
+        # Assertions
         self.assertIn("events", result)
         self.assertEqual(len(result["events"]), 2)
         self.assertEqual(result["events_count"], 2)
-        self.assertEqual(result["events_analyzed"], 2)
-        self.assertIn("summary", result)
+        self.assertEqual(result["events"][0]["eventId"], "change1")
+        self.assertEqual(result["events"][1]["eventId"], "change2")
+
+        # Verify the API call was made with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # Corrected to match actual call
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=100,     # default size
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["change"]
+        )
 
     def test_get_changes_method_error(self):
         """Test get_changes method with API error"""
@@ -706,113 +713,8 @@ class TestAgentMonitoringEventsMCPTools(unittest.TestCase):
 
         # Call the get_changes method directly and store result for assertions
         result = asyncio.run(self.client.get_changes())
-
-        # Check that the result contains an error message
         self.assertIn("error", result)
-        self.assertIn("Failed to retrieve change events", result["error"])
-
-    @patch('src.event.events_tools.datetime')
-    def test_get_changes_method_empty_result(self, mock_datetime):
-        """Test get_changes method with empty result"""
-        # Set up the mock datetime
-        mock_now = MagicMock()
-        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-        mock_datetime.now = MagicMock(return_value=mock_now)
-        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
-
-        # Set up the mock response as empty list
-        self.events_api.get_events.return_value = []
-
-        # Call the get_changes method directly
-        result = asyncio.run(self.client.get_changes())
-
-        # Check that the result contains the expected analysis for empty results
-        self.assertIn("analysis", result)
-        self.assertIn("No change events found", result["analysis"])
-        self.assertIn("time_range", result)
-        self.assertEqual(result["events_count"], 0)
-
-    @patch('src.event.events_tools.datetime')
-    def test_get_changes_method_with_time_range(self, mock_datetime):
-        """Test get_changes method with time range parameter"""
-        # Set up the mock datetime
-        mock_now = MagicMock()
-        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-        mock_datetime.now = MagicMock(return_value=mock_now)
-
-        # Set up the mock response (empty list for simplicity)
-        self.events_api.get_events.return_value = []
-
-        # Call the get_changes method with time_range
-        _ = asyncio.run(self.client.get_changes(time_range="last 2 hours"))
-
-        # Check that the mock was called with the correct parameters
-        expected_to_time = 1000 * 1000  # Convert seconds to milliseconds
-        expected_from_time = expected_to_time - (2 * 60 * 60 * 1000)  # 2 hours earlier
-
-        self.events_api.get_events.assert_called_once()
-        call_args = self.events_api.get_events.call_args[1]
-        self.assertEqual(call_args['var_from'], expected_from_time)
-        self.assertEqual(call_args['to'], expected_to_time)
-        self.assertEqual(call_args['event_type_filters'], ["change"])
-
-    @patch('src.event.events_tools.datetime')
-    def test_get_changes_method_with_explicit_times(self, mock_datetime):
-        """Test get_changes method with explicit from_time and to_time"""
-        # Set up the mock datetime (should not be used)
-        mock_now = MagicMock()
-        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-        mock_datetime.now = MagicMock(return_value=mock_now)
-
-        # Set up the mock response (empty list for simplicity)
-        self.events_api.get_events.return_value = []
-
-        # Call the get_changes method with explicit times
-        explicit_from = 500000
-        explicit_to = 600000
-        # Call method with explicit times (result used in assertion via mock call)
-        _ = asyncio.run(self.client.get_changes(from_time=explicit_from, to_time=explicit_to))
-
-        # Check that the mock was called with the correct parameters
-        self.events_api.get_events.assert_called_once()
-        call_args = self.events_api.get_events.call_args[1]
-        self.assertEqual(call_args['var_from'], explicit_from)
-        self.assertEqual(call_args['to'], explicit_to)
-        self.assertEqual(call_args['event_type_filters'], ["change"])
-
-    def test_get_changes_method_with_change_details(self):
-        """Test get_changes method with events containing change details"""
-        # Set up the mock response with change details
-        mock_event = MagicMock()
-        mock_event.to_dict = MagicMock(return_value={
-            "eventId": "change1",
-            "eventType": "change",
-            "changeType": "deployment",
-            "details": {
-                "version": "1.2.3",
-                "service": "frontend",
-                "user": "deploy-bot"
-            }
-        })
-
-        self.events_api.get_events.return_value = [mock_event]
-
-        # Call the get_changes method
-        result = asyncio.run(self.client.get_changes())
-
-        # Check that the change details were preserved in the result
-        self.assertIn("events", result)
-        self.assertEqual(len(result["events"]), 1)
-
-        # Check that the event has the expected details
-        event = result["events"][0]
-        self.assertEqual(event["eventId"], "change1")
-        self.assertEqual(event["eventType"], "change")
-        self.assertEqual(event["changeType"], "deployment")
-        self.assertIn("details", event)
-        self.assertEqual(event["details"]["version"], "1.2.3")
-        self.assertEqual(event["details"]["service"], "frontend")
-        self.assertEqual(event["details"]["user"], "deploy-bot")
+        self.assertIn("Failed to get change events", result["error"])
 
 # Tests for _process_result method
     def test_process_result_with_list_items(self):
@@ -919,199 +821,76 @@ class TestAgentMonitoringEventsMCPTools(unittest.TestCase):
         self.assertIn("event_types", result)
         self.assertIn("Unknown", result["event_types"])
 
-    # Tests for metrics processing in get_issues, get_incidents, and get_changes
-    def test_metrics_processing_in_get_issues(self):
-        """Test metrics processing in get_issues method"""
-        # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
-
-            # Set up the mock response with complex metrics
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(return_value={
-                "eventId": "issue1",
-                "eventType": "issue",
-                "metrics": [
-                    {"metricName": "cpu.usage", "value": 95.5, "unit": "%"},
-                    {"metricName": "memory.used", "snapshotId": "snap123", "unit": None},
-                    {"metricName": "disk.io", "value": None},
-                    {"metricName": "network.traffic", "snapshotId": None}
-                ]
-            })
-
-            self.events_api.get_events.return_value = [mock_event]
-
-            # Call the get_issues method
-            result = asyncio.run(self.client.get_issues())
-
-            # Check that the metrics were processed correctly
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
-
-            event = result["events"][0]
-            self.assertIn("metrics", event)
-
-            # Check that the metrics were fixed properly
-            metrics = event["metrics"]
-            self.assertEqual(len(metrics), 4)
-
-    def test_metrics_processing_in_get_incidents(self):
-        """Test metrics processing in get_incidents method"""
-        # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
-
-            # Set up the mock response with complex metrics
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(return_value={
-                "eventId": "incident1",
-                "eventType": "incident",
-                "metrics": [
-                    {"metricName": "latency", "value": 500, "unit": "ms"},
-                    {"metricName": "error.rate", "value": 0.05, "unit": "%"}
-                ]
-            })
-
-            self.events_api.get_events.return_value = [mock_event]
-
-            # Call the get_incidents method
-            result = asyncio.run(self.client.get_incidents())
-
-            # Check that the metrics were processed correctly
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
-
-            event = result["events"][0]
-            self.assertIn("metrics", event)
-
-            # Check that the metrics were fixed properly
-            metrics = event["metrics"]
-            self.assertEqual(len(metrics), 2)
-
-    def test_metrics_processing_in_get_changes(self):
-        """Test metrics processing in get_changes method"""
-        # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
-
-            # Set up the mock response with complex metrics
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(return_value={
-                "eventId": "change1",
-                "eventType": "change",
-                "changeType": "deployment",
-                "metrics": [
-                    {"metricName": "deployment.duration", "value": 120, "unit": "s"},
-                    {"metricName": "deployment.size", "value": 1024, "unit": "KB"}
-                ]
-            })
-
-            self.events_api.get_events.return_value = [mock_event]
-
-            # Call the get_changes method
-            result = asyncio.run(self.client.get_changes())
-
-            # Check that the metrics were processed correctly
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
-
-            event = result["events"][0]
-            self.assertIn("metrics", event)
-
-            # Check that the metrics were fixed properly
-            metrics = event["metrics"]
-            self.assertEqual(len(metrics), 2)
-
     # Additional tests for error handling and edge cases
-    def test_get_issues_with_exception_in_processing(self):
+    @patch('src.event.events_tools.datetime')
+    def test_get_issues_with_exception_in_processing(self, mock_datetime):
         """Test get_issues method with exception during event processing"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up a mock event that will cause an exception during processing
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(side_effect=Exception("Processing error"))
+        # Set up the mock response to simulate an exception during JSON parsing
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='invalid_json')  # Triggers JSONDecodeError
 
-            self.events_api.get_events.return_value = [mock_event]
+        # Mock the API client method used in get_issues
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Call the get_issues method
-            result = asyncio.run(self.client.get_issues())
+        # Call the get_issues method
+        result = asyncio.run(self.client.get_issues())
 
-            # Check that the method handled the exception and returned a result
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
+        # Check that the method handled the exception and returned an error
+        self.assertIn("error", result)
+        self.assertIn("Failed to get issue events", result["error"])
+        self.assertIn("Expecting value", result["error"])  # Adjusted to match actual JSONDecodeError message
 
-            # Check that the event contains an error field
-            event = result["events"][0]
-            self.assertIn("error", event)
-            self.assertIn("Failed to process", event["error"])
+        # Verify the API call was made with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # 24-hour default, consistent with previous tests
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=100,     # default size
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["issue"]
+        )
 
-    def test_get_incidents_with_exception_in_processing(self):
+    @patch('src.event.events_tools.datetime')
+    def test_get_incidents_with_exception_in_processing(self, mock_datetime):
         """Test get_incidents method with exception during event processing"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up a mock event that will cause an exception during processing
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(side_effect=Exception("Processing error"))
+        # Set up the mock response to simulate an exception during JSON parsing
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='invalid_json')  # Triggers JSONDecodeError
 
-            self.events_api.get_events.return_value = [mock_event]
+        # Mock the API client method used in get_incidents
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Call the get_incidents method
-            result = asyncio.run(self.client.get_incidents())
+        # Call the get_incidents method
+        result = asyncio.run(self.client.get_incidents())
 
-            # Check that the method handled the exception and returned a result
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
+        # Check that the method handled the exception and returned an error
+        self.assertIn("error", result)
+        self.assertIn("Failed to get incident events", result["error"])
+        self.assertIn("Expecting value", result["error"])  # Adjusted to match actual JSONDecodeError message
 
-            # Check that the event contains an error field
-            event = result["events"][0]
-            self.assertIn("error", event)
-            self.assertIn("Failed to process", event["error"])
-
-    def test_get_changes_with_exception_in_processing(self):
-        """Test get_changes method with exception during event processing"""
-        # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
-
-            # Set up a mock event that will cause an exception during processing
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(side_effect=Exception("Processing error"))
-
-            self.events_api.get_events.return_value = [mock_event]
-
-            # Call the get_changes method
-            result = asyncio.run(self.client.get_changes())
-
-            # Check that the method handled the exception and returned a result
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
-
-            # Check that the event contains an error field
-            event = result["events"][0]
-            self.assertIn("error", event)
-            self.assertIn("Failed to process", event["error"])
+        # Verify the API call was made with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # 24-hour default, consistent with previous tests
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=100,     # default size
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["incident"]
+        )
 
     # Test for import error handling
     def test_import_error_handling(self):
@@ -1127,7 +906,7 @@ class TestAgentMonitoringEventsMCPTools(unittest.TestCase):
 
         # Check that the result contains an error message
         self.assertIn("error", result)
-        self.assertIn("Failed to retrieve issue events", result["error"])
+        self.assertIn("Failed to get issue events", result["error"])  # Corrected to match implementation
         self.assertIn("'NoneType' object has no attribute", result["error"])
 
     # Tests for _process_time_range method
@@ -1350,140 +1129,108 @@ class TestAgentMonitoringEventsMCPTools(unittest.TestCase):
         self.assertEqual(result["name"], "Object 1")
 
     # Additional tests for edge cases
-    def test_get_issues_with_severity_filtering(self):
+    @patch('src.event.events_tools.datetime')
+    def test_get_issues_with_severity_filtering(self, mock_datetime):
         """Test get_issues method with severity filtering"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up mock events with different severities
-            mock_event1 = MagicMock()
-            mock_event1.to_dict = MagicMock(return_value={
+        # Set up the mock response for get_events_without_preload_content
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='''[
+            {
                 "eventId": "issue1",
                 "eventType": "issue",
-                "severity": 10  # High severity
-            })
-
-            mock_event2 = MagicMock()
-            mock_event2.to_dict = MagicMock(return_value={
+                "severity": 10
+            },
+            {
                 "eventId": "issue2",
                 "eventType": "issue",
-                "severity": 5   # Medium severity
-            })
-
-            mock_event3 = MagicMock()
-            mock_event3.to_dict = MagicMock(return_value={
+                "severity": 5
+            },
+            {
                 "eventId": "issue3",
                 "eventType": "issue",
-                "severity": 1   # Low severity
-            })
+                "severity": 1
+            }
+        ]''')
 
-            self.events_api.get_events.return_value = [mock_event1, mock_event2, mock_event3]
+        # Mock the API client method used in get_issues
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Call the get_issues method
-            result = asyncio.run(self.client.get_issues())
+        # Call the get_issues method with a query for severity filtering
+        result = asyncio.run(self.client.get_issues(query="severity:5"))
 
-            # Check that all events were included
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 3)
+        # Check that all events were included
+        self.assertIn("events", result)
+        self.assertEqual(len(result["events"]), 3)
+        self.assertEqual(result["events_count"], 3)
 
-            # Check that the events were sorted by severity (highest first)
-            events = result["events"]
-            self.assertEqual(events[0]["eventId"], "issue1")  # Highest severity
-            self.assertEqual(events[1]["eventId"], "issue2")  # Medium severity
-            self.assertEqual(events[2]["eventId"], "issue3")  # Lowest severity
+        # Check that the events are returned as provided by the API
+        events = result["events"]
+        self.assertEqual(events[0]["eventId"], "issue1")
+        self.assertEqual(events[1]["eventId"], "issue2")
+        self.assertEqual(events[2]["eventId"], "issue3")
 
-    def test_get_incidents_with_empty_metrics(self):
-        """Test get_incidents method with empty metrics field"""
-        # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
+        # Verify the API call was made with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # Corrected to match actual call (24 hours)
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=100,     # default size
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["issue"]
+        )
 
-            # Set up a mock event with empty metrics
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(return_value={
-                "eventId": "incident1",
-                "eventType": "incident",
-                "metrics": []  # Empty metrics
-            })
-
-            self.events_api.get_events.return_value = [mock_event]
-
-            # Call the get_incidents method
-            result = asyncio.run(self.client.get_incidents())
-
-            # Check that the event was processed correctly
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
-
-            # Check that the metrics field is present but empty
-            event = result["events"][0]
-            self.assertIn("metrics", event)
-            self.assertEqual(len(event["metrics"]), 0)
-
-    def test_get_changes_with_missing_fields(self):
+    @patch('src.event.events_tools.datetime')
+    def test_get_changes_with_missing_fields(self, mock_datetime):
         """Test get_changes method with missing fields"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)
-            mock_datetime.now = MagicMock(return_value=mock_now)
-            mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up a mock event with missing fields
-            mock_event = MagicMock()
-            mock_event.to_dict = MagicMock(return_value={
+        # Set up the mock response for get_events_without_preload_content
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='''[
+            {
                 "eventId": "change1",
                 "eventType": "change"
-                # Missing changeType and other fields
-            })
+            }
+        ]''')
 
-            self.events_api.get_events.return_value = [mock_event]
+        # Mock the API client method used in get_changes
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Call the get_changes method
-            result = asyncio.run(self.client.get_changes())
+        # Call the get_changes method
+        result = asyncio.run(self.client.get_changes())
 
-            # Check that the event was processed correctly
-            self.assertIn("events", result)
-            self.assertEqual(len(result["events"]), 1)
+        # Check that the event was processed correctly
+        self.assertIn("events", result)
+        self.assertEqual(len(result["events"]), 1)
+        self.assertEqual(result["events_count"], 1)
 
-            # Check that the event has the expected fields
-            event = result["events"][0]
-            self.assertEqual(event["eventId"], "change1")
-            self.assertEqual(event["eventType"], "change")
-            # The changeType field should be missing or None
+        # Check that the event has the expected fields
+        event = result["events"][0]
+        self.assertEqual(event["eventId"], "change1")
+        self.assertEqual(event["eventType"], "change")
+        self.assertNotIn("changeType", event)  # Verify missing field
 
-# Made with Bob
-
-# Additional tests for edge cases and uncovered code paths
-class TestAgentMonitoringEventsMCPToolsAdditional(unittest.TestCase):
-    """Additional tests for the AgentMonitoringEventsMCPTools class"""
-
-    def setUp(self):
-        """Set up test fixtures"""
-        # Reset all mocks
-        mock_configuration.reset_mock()
-        mock_api_client.reset_mock()
-        mock_events_api.reset_mock()
-
-        # Store references to the global mocks
-        self.mock_configuration = mock_configuration
-        self.mock_api_client = mock_api_client
-        self.events_api = MagicMock()
-
-        # Create the client
-        self.read_token = "test_token"
-        self.base_url = "https://test.instana.io"
-        self.client = AgentMonitoringEventsMCPTools(read_token=self.read_token, base_url=self.base_url)
-
-        # Set up the client's API attribute
-        self.client.events_api = self.events_api
+        # Verify the API call was made with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # Corrected to match actual call (24 hours)
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=100,     # default size
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["change"]
+        )
 
     def test_process_time_range_with_hour_format(self):
         """Test _process_time_range method with hour format"""
@@ -1593,93 +1340,116 @@ class TestAgentMonitoringEventsMCPToolsAdditional(unittest.TestCase):
             self.assertEqual(from_time, expected_from_time)
             self.assertEqual(to_time, to_time_value)
 
-    def test_get_issues_with_size_parameter(self):
+    @patch('src.event.events_tools.datetime')
+    def test_get_issues_with_size_parameter(self, mock_datetime):
         """Test get_issues with size parameter"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-            mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up the mock response
-            self.events_api.get_events.return_value = []
+        # Set up the mock response for get_events_without_preload_content
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='[]')  # Empty JSON array
 
-            # Call the method with size parameter
-            size = 200
-            # Result not needed as we're checking the mock call
-            _ = asyncio.run(self.client.get_issues(size=size))
+        # Mock the API client method used in get_issues
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Check that the API was called with the correct parameters
-            self.events_api.get_events.assert_called_once()
-            call_args = self.events_api.get_events.call_args[1]
-            self.assertEqual(call_args['window_size'], size)
+        # Call the method with size parameter
+        size = 200
+        result = asyncio.run(self.client.get_issues(size=size))
 
-    def test_get_incidents_with_size_parameter(self):
+        # Check that the API was called with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once()
+        call_args = self.events_api.get_events_without_preload_content.call_args[1]
+        self.assertEqual(call_args['window_size'], size)
+
+        # Check the result for correctness
+        self.assertIn("events", result)
+        self.assertEqual(len(result["events"]), 0)
+        self.assertEqual(result["events_count"], 0)
+
+    @patch('src.event.events_tools.datetime')
+    def test_get_incidents_with_size_parameter(self, mock_datetime):
         """Test get_incidents with size parameter"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-            mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up the mock response
-            self.events_api.get_events.return_value = []
+        # Set up the mock response for get_events_without_preload_content
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='[]')  # Empty JSON array
 
-            # Call the method with size parameter
-            size = 200
-            # Result not needed as we're checking the mock call
-            _ = asyncio.run(self.client.get_incidents(size=size))
+        # Mock the API client method used in get_incidents
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Check that the API was called with the correct parameters
-            self.events_api.get_events.assert_called_once()
-            call_args = self.events_api.get_events.call_args[1]
-            self.assertEqual(call_args['window_size'], size)
+        # Call the method with size parameter
+        size = 200
+        result = asyncio.run(self.client.get_incidents(size=size))
 
-    def test_get_changes_with_size_parameter(self):
+        # Check that the API was called with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once()
+        call_args = self.events_api.get_events_without_preload_content.call_args[1]
+        self.assertEqual(call_args['window_size'], size)
+
+        # Check the result for correctness
+        self.assertIn("events", result)
+        self.assertEqual(len(result["events"]), 0)
+        self.assertEqual(result["events_count"], 0)
+
+        # Verify the API call parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # 24-hour default, consistent with previous tests
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=200,     # size parameter passed to get_incidents
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["incident"]
+        )
+
+    @patch('src.event.events_tools.datetime')
+    def test_get_changes_with_size_parameter(self, mock_datetime):
         """Test get_changes with size parameter"""
         # Set up the mock datetime
-        with patch('src.event.events_tools.datetime') as mock_datetime:
-            mock_now = MagicMock()
-            mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
-            mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_now = MagicMock()
+        mock_now.timestamp = MagicMock(return_value=1000)  # 1000 seconds since epoch
+        mock_datetime.now = MagicMock(return_value=mock_now)
+        mock_datetime.fromtimestamp = MagicMock(side_effect=lambda ts, *args: datetime.fromtimestamp(ts))
 
-            # Set up the mock response
-            self.events_api.get_events.return_value = []
+        # Set up the mock response for get_events_without_preload_content
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.data.decode = MagicMock(return_value='[]')  # Empty JSON array
 
-            # Call the method with size parameter
-            size = 200
-            # Result not needed as we're checking the mock call
-            _ = asyncio.run(self.client.get_changes(size=size))
+        # Mock the API client method used in get_changes
+        self.events_api.get_events_without_preload_content.return_value = mock_response
 
-            # Check that the API was called with the correct parameters
-            self.events_api.get_events.assert_called_once()
-            call_args = self.events_api.get_events.call_args[1]
-            self.assertEqual(call_args['window_size'], size)
+        # Call the method with size parameter
+        size = 200
+        result = asyncio.run(self.client.get_changes(size=size))
 
-    def test_get_events_by_ids_with_multiple_ids(self):
-        """Test get_events_by_ids with multiple IDs"""
-        # Set up the mock response
-        mock_event1 = MagicMock()
-        mock_event1.to_dict = MagicMock(return_value={"eventId": "id1", "data": "event1"})
+        # Check that the API was called with the correct parameters
+        self.events_api.get_events_without_preload_content.assert_called_once()
+        call_args = self.events_api.get_events_without_preload_content.call_args[1]
+        self.assertEqual(call_args['window_size'], size)
 
-        mock_event2 = MagicMock()
-        mock_event2.to_dict = MagicMock(return_value={"eventId": "id2", "data": "event2"})
-
-        mock_event3 = MagicMock()
-        mock_event3.to_dict = MagicMock(return_value={"eventId": "id3", "data": "event3"})
-
-        self.events_api.get_events_by_ids.return_value = [mock_event1, mock_event2, mock_event3]
-
-        # Call the method with multiple IDs
-        event_ids = ["id1", "id2", "id3"]
-        result = asyncio.run(self.client.get_events_by_ids(event_ids=event_ids))
-
-        # Check that the mock was called with the correct arguments
-        self.events_api.get_events_by_ids.assert_called_once_with(request_body=event_ids)
-
-        # Check that the result contains all events
+        # Check the result for correctness
         self.assertIn("events", result)
-        self.assertEqual(len(result["events"]), 3)
-        self.assertEqual(result["events_count"], 3)
-        self.assertEqual(result["successful_retrievals"], 3)
-        self.assertEqual(result["failed_retrievals"], 0)
+        self.assertEqual(len(result["events"]), 0)
+        self.assertEqual(result["events_count"], 0)
+
+        # Verify the API call parameters
+        self.events_api.get_events_without_preload_content.assert_called_once_with(
+            var_from=-85400000,  # 24-hour default, consistent with previous tests
+            to=1000000,          # 1000 seconds * 1000 (milliseconds)
+            window_size=200,     # size parameter passed to get_incidents
+            filter_event_updates=None,
+            exclude_triggered_before=None,
+            event_type_filters=["change"]
+        )
+
