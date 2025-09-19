@@ -1,3 +1,4 @@
+
 """
 Agent Monitoring Events MCP Tools Module
 
@@ -564,118 +565,33 @@ class AgentMonitoringEventsMCPTools(BaseInstanaClient):
 
         try:
             logger.debug(f"get_issue_events called with query={query}, time_range={time_range}, from_time={from_time}, to_time={to_time}, size={size}")
-
-            # Process time range parameters
             from_time, to_time = self._process_time_range(time_range, from_time, to_time)
-
-            # For all events, default to 1 hour if not specified
             if not from_time:
-                from_time = to_time - (60 * 60 * 1000)  # Default to 1 hour
-
-            # Log the time range
-            from_date = datetime.fromtimestamp(from_time/1000).strftime('%Y-%m-%d %H:%M:%S')
-            to_date = datetime.fromtimestamp(to_time/1000).strftime('%Y-%m-%d %H:%M:%S')
-            logger.debug(f"Processed time range: {from_date} to {to_date}")
-
-            # Set event_type_filters to "issue"
-            event_type_filters = ["issue"]
-
-            # Call the get_events method from the SDK
+                from_time = to_time - (60 * 60 * 1000)
             try:
-                result = api_client.get_events(
+                response_data = api_client.get_events_without_preload_content(
                     var_from=from_time,
                     to=to_time,
                     window_size=size,
                     filter_event_updates=filter_event_updates,
                     exclude_triggered_before=exclude_triggered_before,
-                    event_type_filters=event_type_filters
+                    event_type_filters=["issue"]
                 )
-                logger.debug("Successfully retrieved issue events using standard API call")
-
+                if response_data.status != 200:
+                    return {"error": f"Failed to get issue events: HTTP {response_data.status}"}
+                response_text = response_data.data.decode('utf-8')
+                result = json.loads(response_text)
+                if isinstance(result, list):
+                    result_dict = {"events": result, "events_count": len(result)}
+                else:
+                    result_dict = result
+                return result_dict
             except Exception as api_error:
-                logger.error(f"Failed to retrieve issue events: {api_error}", exc_info=True)
-                return {
-                    "error": f"Failed to retrieve issue events: {api_error}",
-                    "time_range": f"{from_date} to {to_date}"
-                }
-
-            logger.debug(f"Raw API result type: {type(result)}")
-            logger.debug(f"Raw API result length: {len(result) if isinstance(result, list) else 'not a list'}")
-
-            # If there are no events, return early
-            if not result or (isinstance(result, list) and len(result) == 0):
-                return {
-                    "analysis": f"No issue events found between {from_date} and {to_date}.",
-                    "time_range": f"{from_date} to {to_date}",
-                    "events_count": 0
-                }
-
-            # Process the events
-            events = result if isinstance(result, list) else [result]
-
-            # Get the total number of events before limiting
-            total_events_count = len(events)
-
-            # Limit the number of events to process
-            events = events[:max_events]
-            logger.debug(f"Limited to processing {len(events)} issue events out of {total_events_count} total events")
-
-            # Convert objects to dictionaries and fix format issues
-            event_dicts = []
-            for event in events:
-                try:
-                    if hasattr(event, 'to_dict'):
-                        event_dict = event.to_dict()
-                    else:
-                        event_dict = event
-
-                    # Fix the metrics field to match the expected format
-                    if event_dict.get('metrics'):
-                        fixed_metrics = []
-                        for metric in event_dict['metrics']:
-                            fixed_metric = {}
-
-                            # Transform string values to proper dictionary format
-                            if 'metricName' in metric and isinstance(metric['metricName'], str):
-                                fixed_metric['name'] = metric['metricName']
-                                # Add placeholder value if not present
-                                fixed_metric['value'] = metric.get('value', 0.0)
-                                # Add placeholder unit if not present
-                                fixed_metric['unit'] = metric.get('unit', "")
-
-                            # Transform snapshotId to entity dictionary
-                            if 'snapshotId' in metric and isinstance(metric['snapshotId'], str):
-                                fixed_metric['entity'] = {"id": metric['snapshotId']}
-
-                            # If the metric already has the correct format, keep it
-                            if not fixed_metric:
-                                fixed_metric = metric
-
-                            fixed_metrics.append(fixed_metric)
-
-                    event_dicts.append(event_dict)
-                except Exception as e:
-                    logger.error(f"Error processing issue event: {e}", exc_info=True)
-                    # Add a simplified version of the event to avoid losing data
-                    event_dicts.append({"eventId": getattr(event, "eventId", "unknown"), "error": f"Failed to process: {e!s}"})
-
-            # Create a summary of event types
-            event_summary = self._summarize_events_result(event_dicts, total_events_count, max_events)
-
-            # Return the processed events with summary
-            return {
-                "events": event_dicts,
-                "events_count": total_events_count,
-                "events_analyzed": len(events),
-                "summary": event_summary
-            }
-
+                logger.error(f"API call failed: {api_error}", exc_info=True)
+                return {"error": f"Failed to get issue events: {api_error}"}
         except Exception as e:
             logger.error(f"Error in get_issue_events: {e}", exc_info=True)
-            return {
-                "error": f"Failed to get issue events: {e!s}",
-                "details": str(e)
-            }
+            return {"error": f"Failed to get issue events: {e!s}"}
 
     @register_as_tool
     @with_header_auth(EventsApi)
@@ -717,118 +633,33 @@ class AgentMonitoringEventsMCPTools(BaseInstanaClient):
 
         try:
             logger.debug(f"get_incident_events called with query={query}, time_range={time_range}, from_time={from_time}, to_time={to_time}, size={size}")
-
-            # Process time range parameters
             from_time, to_time = self._process_time_range(time_range, from_time, to_time)
-
-            # For all events, default to 1 hour if not specified
             if not from_time:
-                from_time = to_time - (60 * 60 * 1000)  # Default to 1 hour
-
-            # Log the time range
-            from_date = datetime.fromtimestamp(from_time/1000).strftime('%Y-%m-%d %H:%M:%S')
-            to_date = datetime.fromtimestamp(to_time/1000).strftime('%Y-%m-%d %H:%M:%S')
-            logger.debug(f"Processed time range: {from_date} to {to_date}")
-
-            # Set event_type_filters to "incident"
-            event_type_filters = ["incident"]
-
-            # Call the get_events method from the SDK
+                from_time = to_time - (60 * 60 * 1000)
             try:
-                result = api_client.get_events(
+                response_data = api_client.get_events_without_preload_content(
                     var_from=from_time,
                     to=to_time,
                     window_size=size,
                     filter_event_updates=filter_event_updates,
                     exclude_triggered_before=exclude_triggered_before,
-                    event_type_filters=event_type_filters
+                    event_type_filters=["incident"]
                 )
-                logger.debug("Successfully retrieved incident events using standard API call")
-
+                if response_data.status != 200:
+                    return {"error": f"Failed to get incident events: HTTP {response_data.status}"}
+                response_text = response_data.data.decode('utf-8')
+                result = json.loads(response_text)
+                if isinstance(result, list):
+                    result_dict = {"events": result, "events_count": len(result)}
+                else:
+                    result_dict = result
+                return result_dict
             except Exception as api_error:
-                logger.error(f"Failed to retrieve incident events: {api_error}", exc_info=True)
-                return {
-                    "error": f"Failed to retrieve incident events: {api_error}",
-                    "time_range": f"{from_date} to {to_date}"
-                }
-
-            logger.debug(f"Raw API result type: {type(result)}")
-            logger.debug(f"Raw API result length: {len(result) if isinstance(result, list) else 'not a list'}")
-
-            # If there are no events, return early
-            if not result or (isinstance(result, list) and len(result) == 0):
-                return {
-                    "analysis": f"No incident events found between {from_date} and {to_date}.",
-                    "time_range": f"{from_date} to {to_date}",
-                    "events_count": 0
-                }
-
-            # Process the events
-            events = result if isinstance(result, list) else [result]
-
-            # Get the total number of events before limiting
-            total_events_count = len(events)
-
-            # Limit the number of events to process
-            events = events[:max_events]
-            logger.debug(f"Limited to processing {len(events)} incident events out of {total_events_count} total events")
-
-            # Convert objects to dictionaries and fix format issues
-            event_dicts = []
-            for event in events:
-                try:
-                    if hasattr(event, 'to_dict'):
-                        event_dict = event.to_dict()
-                    else:
-                        event_dict = event
-
-                    # Fix the metrics field to match the expected format
-                    if event_dict.get('metrics'):
-                        fixed_metrics = []
-                        for metric in event_dict['metrics']:
-                            fixed_metric = {}
-
-                            # Transform string values to proper dictionary format
-                            if 'metricName' in metric and isinstance(metric['metricName'], str):
-                                fixed_metric['name'] = metric['metricName']
-                                # Add placeholder value if not present
-                                fixed_metric['value'] = metric.get('value', 0.0)
-                                # Add placeholder unit if not present
-                                fixed_metric['unit'] = metric.get('unit', "")
-
-                            # Transform snapshotId to entity dictionary
-                            if 'snapshotId' in metric and isinstance(metric['snapshotId'], str):
-                                fixed_metric['entity'] = {"id": metric['snapshotId']}
-
-                            # If the metric already has the correct format, keep it
-                            if not fixed_metric:
-                                fixed_metric = metric
-
-                            fixed_metrics.append(fixed_metric)
-
-                    event_dicts.append(event_dict)
-                except Exception as e:
-                    logger.error(f"Error processing incident event: {e}", exc_info=True)
-                    # Add a simplified version of the event to avoid losing data
-                    event_dicts.append({"eventId": getattr(event, "eventId", "unknown"), "error": f"Failed to process: {e!s}"})
-
-            # Create a summary of event types
-            event_summary = self._summarize_events_result(event_dicts, total_events_count, max_events)
-
-            # Return the processed events with summary
-            return {
-                "events": event_dicts,
-                "events_count": total_events_count,
-                "events_analyzed": len(events),
-                "summary": event_summary
-            }
-
+                logger.error(f"API call failed: {api_error}", exc_info=True)
+                return {"error": f"Failed to get incident events: {api_error}"}
         except Exception as e:
             logger.error(f"Error in get_incident_events: {e}", exc_info=True)
-            return {
-                "error": f"Failed to get incident events: {e!s}",
-                "details": str(e)
-            }
+            return {"error": f"Failed to get incident events: {e!s}"}
 
     @register_as_tool
     @with_header_auth(EventsApi)
@@ -870,119 +701,33 @@ class AgentMonitoringEventsMCPTools(BaseInstanaClient):
 
         try:
             logger.debug(f"get_change_events called with query={query}, time_range={time_range}, from_time={from_time}, to_time={to_time}, size={size}")
-
-            # Process time range parameters
             from_time, to_time = self._process_time_range(time_range, from_time, to_time)
-
-            # For all events, default to 1 hour if not specified
             if not from_time:
-                from_time = to_time - (60 * 60 * 1000)  # Default to 1 hour
-
-            # Log the time range
-            from_date = datetime.fromtimestamp(from_time/1000).strftime('%Y-%m-%d %H:%M:%S')
-            to_date = datetime.fromtimestamp(to_time/1000).strftime('%Y-%m-%d %H:%M:%S')
-            logger.debug(f"Processed time range: {from_date} to {to_date}")
-
-            # Set event_type_filters to "change"
-            event_type_filters = ["change"]
-
-            # Call the get_events method from the SDK
+                from_time = to_time - (60 * 60 * 1000)
             try:
-                result = api_client.get_events(
+                response_data = api_client.get_events_without_preload_content(
                     var_from=from_time,
                     to=to_time,
                     window_size=size,
                     filter_event_updates=filter_event_updates,
                     exclude_triggered_before=exclude_triggered_before,
-                    event_type_filters=event_type_filters
+                    event_type_filters=["change"]
                 )
-                logger.debug("Successfully retrieved change events using standard API call")
-
+                if response_data.status != 200:
+                    return {"error": f"Failed to get change events: HTTP {response_data.status}"}
+                response_text = response_data.data.decode('utf-8')
+                result = json.loads(response_text)
+                if isinstance(result, list):
+                    result_dict = {"events": result, "events_count": len(result)}
+                else:
+                    result_dict = result
+                return result_dict
             except Exception as api_error:
-                logger.error(f"Failed to retrieve change events: {api_error}", exc_info=True)
-                return {
-                    "error": f"Failed to retrieve change events: {api_error}",
-                    "time_range": f"{from_date} to {to_date}"
-                }
-
-            logger.debug(f"Raw API result type: {type(result)}")
-            logger.debug(f"Raw API result length: {len(result) if isinstance(result, list) else 'not a list'}")
-
-            # If there are no events, return early
-            if not result or (isinstance(result, list) and len(result) == 0):
-                return {
-                    "analysis": f"No change events found between {from_date} and {to_date}.",
-                    "time_range": f"{from_date} to {to_date}",
-                    "events_count": 0
-                }
-
-            # Process the events
-            events = result if isinstance(result, list) else [result]
-
-            # Get the total number of events before limiting
-            total_events_count = len(events)
-
-            # Limit the number of events to process
-            events = events[:max_events]
-            logger.debug(f"Limited to processing {len(events)} change events out of {total_events_count} total events")
-
-            # Convert objects to dictionaries and fix format issues
-            event_dicts = []
-            for event in events:
-                try:
-                    if hasattr(event, 'to_dict'):
-                        event_dict = event.to_dict()
-                    else:
-                        event_dict = event
-
-                    # Fix the metrics field to match the expected format
-                    if event_dict.get('metrics'):
-                        fixed_metrics = []
-                        for metric in event_dict['metrics']:
-                            fixed_metric = {}
-
-                            # Transform string values to proper dictionary format
-                            if 'metricName' in metric and isinstance(metric['metricName'], str):
-                                fixed_metric['name'] = metric['metricName']
-                                # Add placeholder value if not present
-                                fixed_metric['value'] = metric.get('value', 0.0)
-                                # Add placeholder unit if not present
-                                fixed_metric['unit'] = metric.get('unit', "")
-
-                            # Transform snapshotId to entity dictionary
-                            if 'snapshotId' in metric and isinstance(metric['snapshotId'], str):
-                                fixed_metric['entity'] = {"id": metric['snapshotId']}
-
-                            # If the metric already has the correct format, keep it
-                            if not fixed_metric:
-                                fixed_metric = metric
-
-                            fixed_metrics.append(fixed_metric)
-
-                    event_dicts.append(event_dict)
-                except Exception as e:
-                    logger.error(f"Error processing change event: {e}", exc_info=True)
-                    # Add a simplified version of the event to avoid losing data
-                    event_dicts.append({"eventId": getattr(event, "eventId", "unknown"), "error": f"Failed to process: {e!s}"})
-
-            # Create a summary of event types
-            event_summary = self._summarize_events_result(event_dicts, total_events_count, max_events)
-
-            # Return the processed events with summary
-            return {
-                "events": event_dicts,
-                "events_count": total_events_count,
-                "events_analyzed": len(events),
-                "summary": event_summary
-            }
-
+                logger.error(f"API call failed: {api_error}", exc_info=True)
+                return {"error": f"Failed to get change events: {api_error}"}
         except Exception as e:
             logger.error(f"Error in get_change_events: {e}", exc_info=True)
-            return {
-                "error": f"Failed to get change events: {e!s}",
-                "details": str(e)
-            }
-
+            return {"error": f"Failed to get change events: {e!s}"}
 
     @register_as_tool
     @with_header_auth(EventsApi)
@@ -1056,17 +801,33 @@ class AgentMonitoringEventsMCPTools(BaseInstanaClient):
             except Exception as batch_error:
                 logger.warning(f"Batch API failed: {batch_error}. Falling back to individual requests.")
 
-                # Fallback to individual requests if batch API fails
+                # Fallback to individual requests using without_preload_content
                 all_events = []
                 for event_id in event_ids:
                     try:
                         logger.debug(f"Retrieving event ID: {event_id}")
-                        event = api_client.get_events_by_ids(request_body=[event_id])
-                        if isinstance(event, list) and event:
-                            event_dict = event[0].to_dict() if hasattr(event[0], 'to_dict') else event[0]
-                            all_events.append(event_dict)
-                        else:
-                            all_events.append({"eventId": event_id, "error": "Not found"})
+                        response_data = api_client.get_events_by_ids_without_preload_content(request_body=[event_id])
+
+                        # Check if the response was successful
+                        if response_data.status != 200:
+                            error_message = f"Failed to get event {event_id}: HTTP {response_data.status}"
+                            logger.error(error_message)
+                            all_events.append({"eventId": event_id, "error": error_message})
+                            continue
+
+                        # Read and parse the response content
+                        response_text = response_data.data.decode('utf-8')
+                        try:
+                            event_dict = json.loads(response_text)
+                            if isinstance(event_dict, list) and event_dict:
+                                all_events.append(event_dict[0])
+                            else:
+                                all_events.append({"eventId": event_id, "error": "No event data returned"})
+                        except json.JSONDecodeError as json_err:
+                            error_message = f"Failed to parse JSON for event {event_id}: {json_err}"
+                            logger.error(error_message)
+                            all_events.append({"eventId": event_id, "error": error_message})
+
                     except Exception as e:
                         logger.error(f"Error retrieving event ID {event_id}: {e}", exc_info=True)
                         all_events.append({"eventId": event_id, "error": f"Failed to retrieve: {e!s}"})
