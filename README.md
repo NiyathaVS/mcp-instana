@@ -591,18 +591,53 @@ Here is an example of a GitHub Copilot response:
 
 ## Supported Features
 
-- [ ] Application
-  - [ ] Application Metrics
-    - [ ] Application Metrics
-    - [ ] Endpoint Metrics
-    - [ ] Service Metrics
-    - [ ] Data Metrics
-  - [x] Application Resources
+- [ ] **Application**
+  - [ ] **Application Analyze**
+    - [ ] Get Call Details
+    - [ ] Get Trace Details
+    - [ ] Get All Traces
+    - [ ] Get Grouped Trace Metrics
+    - [ ] Get Grouped Calls Metrics
+    - [ ] Get Correlated Traces
+  - [ ] **Application Metrics**
+    - [ ] Get Application Data Metrics V2
+    - [ ] Get Application Metrics
+    - [ ] Get Endpoints Metrics
+    - [ ] Get Services Metrics
+  - [x] **Application Resources**
     - [x] Get Applications Endpoints
     - [x] Get Applications
     - [x] Get Services
     - [x] Get Application Services
-  - [x] Application Alert Configuration
+  - [ ] **Application Catalog**
+    - [ ] Get Application Tag Catalog
+    - [ ] Get Application Metric Catalog
+  - [ ] **Application Topology**
+    - [ ] Get Application Topology (Service Map)
+  - [ ] **Application Settings**
+    - [ ] Get All Applications Configs
+    - [ ] Add Application Config
+    - [ ] Delete Application Config
+    - [ ] Get Application Config
+    - [ ] Update Application Config
+    - [ ] Get All Endpoint Configs
+    - [ ] Create Endpoint Config
+    - [ ] Delete Endpoint Config
+    - [ ] Get Endpoint Config
+    - [ ] Update Endpoint Config
+    - [ ] Get All Manual Service Configs
+    - [ ] Add Manual Service Config
+    - [ ] Delete Manual Service Config
+    - [ ] Update Manual Service Config
+    - [ ] Replace All Manual Service Config
+    - [ ] Get All Service Configs
+    - [ ] Add Service Config
+    - [ ] Replace All Service Configs
+    - [ ] Order Service Config
+    - [ ] Delete Service Config
+    - [ ] Get Service Config
+    - [ ] Update Service Config
+  - [x] **Application Alert Configuration**
     - [x] Get All Smart Alert Configurations
     - [x] Get Smart Alert Configuration
     - [x] Get Smart Alert Config Versions
@@ -613,14 +648,25 @@ Here is an example of a GitHub Copilot response:
     - [x] Enable Application Alert Config
     - [x] Disable Smart Alert Config
     - [x] Restore Smart Alert Config
-- [ ] Infrastructure
-  - [ ] Infrastructure Analyze
+  - [ ] **Global Application Alert Configuration**
+    - [ ] Find Active Global Application Alert Configs
+    - [ ] Find Global Application Alert Config Versions
+    - [ ] Find Global Application Alert Config
+    - [ ] Delete Global Application Alert Config
+    - [ ] Enable Global Application Alert Config
+    - [ ] Disable Global Application Alert Config
+    - [ ] Restore Global Application Alert Config
+    - [ ] Create Global Application Alert Config
+    - [ ] Update Global Application Alert Config
+
+- [ ] **Infrastructure**
+  - [ ] **Infrastructure Analyze**
     - [x] Get Available Metrics
-    - [ ] Get infrastructure entities
-    - [ ] Get grouped entities with aggregated metrics
-    - [x] Get available plugins/entity types
-  - [x] Infrastructure Catalog
-    - [x] Get Payload Keys By plugin ID
+    - [ ] Get Infrastructure Entities
+    - [ ] Get Grouped Entities with Aggregated Metrics
+    - [x] Get Available Plugins/Entity Types
+  - [x] **Infrastructure Catalog**
+    - [x] Get Payload Keys By Plugin ID
     - [x] Get Infrastructure Catalog Metrics
     - [x] Get Infrastructure Catalog Plugins
     - [x] Get Infrastructure Catalog Plugins with Custom Metrics
@@ -628,74 +674,197 @@ Here is an example of a GitHub Copilot response:
     - [x] Get Infrastructure Catalog Search Fields with Custom Metrics
     - [x] Get Tag Catalog
     - [x] Get Tag Catalog ALL
-  - [ ] Infrastructure Resources
+  - [ ] **Infrastructure Metrics**
+    - [ ] Get Infrastructure Metrics
+  - [ ] **Infrastructure Resources**
     - [x] Get Monitoring State
-    - [ ] Get plugin Payload
+    - [ ] Get Plugin Payload
     - [x] Search Snapshots
-    - [x] Get Snapshot Details for single Snapshot ID
+    - [x] Get Snapshot Details for Single Snapshot ID
     - [x] Get Details for Multiple Snapshot IDs
     - [x] Software Versions
-  - [x] Infrastructure Topology
-    - [x] Get Hosts for Snapshot
+  - [x] **Infrastructure Topology**
+    - [x] Get Related Hosts for Snapshot
     - [x] Get Topology
-  - [x] Events
-    - [x] Events
-      - [x] Get Event
-      - [x] Get Events by IDs
-      - [x] Get Agent Monitoring Events
-      - [x] Get Kubernetes Info Events
-      - [x] Get Issues
-      - [x] Get Incidents
-      - [x] Get Changes
+
+- [x] **Events**
+  - [x] Get Event
+  - [x] Get Events by IDs
+  - [x] Get Agent Monitoring Events
+  - [x] Get Kubernetes Info Events
+  - [x] Get Issues
+  - [x] Get Incidents
+  - [x] Get Changes
+
+- [ ] **Website Monitoring**
+  - [ ] **Website Analyze**
+    - [ ] Get Website Beacon Groups
+  - [ ] **Website Catalog**
+    - [ ] Get Website Catalog Metrics
+    - [ ] Get Website Catalog Tags
+    - [ ] Get Website Tag Catalog
+  - [ ] **Website Configuration**
+    - [ ] Get Websites
+    - [ ] Get Website
+    - [ ] Create Website
+    - [ ] Delete Website
+    - [ ] Update Website
+  - [ ] **Website Metrics**
+    - [ ] Get Website Page Load
+    - [ ] Get Website Beacon Metrics V2
+
+- [ ] **Custom Dashboards**
+  - [ ] Get Custom Dashboards
+  - [ ] Get Custom Dashboard
+  - [ ] Create Custom Dashboard
+  - [ ] Delete Custom Dashboard
+  - [ ] Update Custom Dashboard
+
+- [ ] **Automation**
+  - [ ] **Action Catalog**
+    - [ ] Get Action Matches
+    - [ ] Get Action Catalog
+  - [ ] **Action History**
+    - [ ] Get Action History
+
+- [ ] **Log Management**
+  - [ ] **Log Alert Configuration**
+    - [ ] Create Log Alert Config
+    - [ ] Delete Log Alert Config
+    - [ ] Get Log Alert Config
+    - [ ] Get Log Alert Configs
+    - [ ] Update Log Alert Config
 
 ## Available Tools
 
-| Tool                                                          | Category                       | Description                                            |
-|---------------------------------------------------------------|--------------------------------|------------------------------------------------------- |
-| `get_application_metrics`                                     | Application Metrics            | Get ApplicationMetrics                                 |
-| `get_endpoints_metrics`                                       | Application Metrics            | Get Endpoint metrics                                   |
-| `get_services_metrics`                                        | Application Metrics            | Get Service metrics                                    |
-| `get_application_data_metrics_v2`                             | Application Metrics            | Get Application Data Metrics                           |
-| `get_applications`                                            | Application Resources          | Get applications                                       |
-| `get_application_services`                                    | Application Resources          | Get applications/services                              |
-| `get_application_endpoints`                                   | Application Resources          | Get endpoints                                          |
-| `get_services`                                                | Application Resources          | Get services                                           |
-| `get_monitoring_state`                                        | Infrastructure Resources       | Monitored host count                                   |
-| `get_plugin_payload`                                          | Infrastructure Resources       | Get a payload for a snapshot                           |
-| `get_snapshots`                                               | Infrastructure Resources       | Search snapshots                                       |
-| `post_snapshots`                                              | Infrastructure Resources       | Get snapshot details for multiple snapshots            |
-| `get_snapshot`                                                | Infrastructure Resources       | Get snapshot details                                   |
-| `software_versions`                                           | Infrastructure Resources       | Get installed software                                 |
-| `get_available_payload_keys_by_plugin_id`                     | Infrastructure Catalog         | Get Payload Keys By plugin ID                          |
-| `get_infrastructure_catalog_metrics`                          | Infrastructure Catalog         | Get Infrastructure Catalog Metrics                     |
-| `get_infrastructure_catalog_plugins`                          | Infrastructure Catalog         | Get Infrastructure Catalog Plugins                     |
-| `get_infrastructure_catalog_plugins_with_custom_metrics`      | Infrastructure Catalog         | Get Infrastructure Catalog Plugins with Custom Metrics |
-| `get_infrastructure_catalog_search_fields`                    | Infrastructure Catalog         | Get Infrastructure Catalog Search Fields               |
-| `get_tag_catalog`                                             | Infrastructure Catalog         | Get Tag Catalog                                        |
-| `get_tag_catalog_all`                                         | Infrastructure Catalog         | Get Tag Catalog ALL                                    |
-| `get_related_hosts`                                           | Infrastructure Topology        | Get Related Hosts                                      |
-| `get_topology`                                                | Infrastructure Topology        | Get Topology                                           |
-| `get_available_metrics`                                       | Infrastructure Analyze         | Get Available Metrics                                  |
-| `get_entities`                                                | Infrastructure Analyze         | Get infrastructure entities                            |
-| `get_aggregated_entity_groups`                                | Infrastructure Analyze         | Get grouped entities with aggregated metrics           |
-| `get_available_plugins`                                       | Infrastructure Analyze         | Get available entity types                             |
-| `get_application_alert_configs`                               | Application Alert Configuration| Get All Smart Alert Configurations                     |
-| `find_application_alert_config`                               | Application Alert Configuration| Get Smart Alert Configuration                          |
-| `find_application_alert_config_versions`                      | Application Alert Configuration| Get Smart Alert Config Versions                        |
-| `create_application_alert_config`                             | Application Alert Configuration| Create Smart Alert Configuration                       |
-| `update_application_alert_config`                             | Application Alert Configuration| Update Smart Alert Configuration                       |
-| `delete_application_alert_config`                             | Application Alert Configuration| Delete Smart Alert Configuration                       |
-| `update_application_historic_baseline`                        | Application Alert Configuration| Recalculate Smart Alert Config Baseline                |
-| `enable_application_alert_config`                             | Application Alert Configuration| Enable Application Alert Config                        |
-| `disable_application_alert_config`                            | Application Alert Configuration| Disable Smart Alert Config                             |
-| `restore_application_alert_config`                            | Application Alert Configuration| Restore Smart Alert Config                             |
-| `get_event`                                                   | Events                         | Get Specific Event by ID                               |
-| `get_kubernetes_info_events`                                  | Events                         | Get Kubernetes Info Events                             |
-| `get_agent_monitoring_events`                                 | Events                         | Get Agent Monitoring Events                            |
-| `get_issues`                                                  | Events                         | Get Issues                                             |
-| `get_incidents`                                               | Events                         | Get Incidents                                          |
-| `get_changes`                                                 | Events                         | Get Changes                                            |
-| `get_events_by_ids`                                           | Events                         | Get Events by IDs                                      |
+| Tool                                                          | Category                              | Description                                            |
+|---------------------------------------------------------------|---------------------------------------|------------------------------------------------------- |
+| **Application Analyze**                                       |                                       |                                                        |
+| `get_call_details`                                            | Application Analyze                   | Get details of a specific call in a trace             |
+| `get_trace_details`                                           | Application Analyze                   | Get details of a specific trace                        |
+| `get_all_traces`                                              | Application Analyze                   | Get all traces                                         |
+| `get_grouped_trace_metrics`                                   | Application Analyze                   | Get grouped trace metrics                              |
+| `get_grouped_calls_metrics`                                   | Application Analyze                   | Get grouped calls metrics                              |
+| `get_correlated_traces`                                       | Application Analyze                   | Resolve trace IDs from monitoring beacons              |
+| **Application Metrics**                                       |                                       |                                                        |
+| `get_application_data_metrics_v2`                             | Application Metrics                   | Get Application Data Metrics V2                        |
+| `get_application_metrics`                                     | Application Metrics                   | Get Application Metrics                                |
+| `get_endpoints_metrics`                                       | Application Metrics                   | Get Endpoint metrics                                   |
+| `get_services_metrics`                                        | Application Metrics                   | Get Service metrics                                    |
+| **Application Resources**                                     |                                       |                                                        |
+| `get_applications`                                            | Application Resources                 | Get applications                                       |
+| `get_application_services`                                    | Application Resources                 | Get applications/services                              |
+| `get_application_endpoints`                                   | Application Resources                 | Get endpoints                                          |
+| `get_services`                                                | Application Resources                 | Get services                                           |
+| **Application Catalog**                                       |                                       |                                                        |
+| `get_application_tag_catalog`                                 | Application Catalog                   | Get application tag catalog                            |
+| `get_application_metric_catalog`                              | Application Catalog                   | Get application metric catalog                         |
+| **Application Topology**                                      |                                       |                                                        |
+| `get_application_topology`                                    | Application Topology                  | Get application topology (service map)                 |
+| **Application Settings**                                      |                                       |                                                        |
+| `get_all_applications_configs`                                | Application Settings                  | Get all application configs                            |
+| `add_application_config`                                      | Application Settings                  | Add application config                                 |
+| `delete_application_config`                                   | Application Settings                  | Delete application config                              |
+| `get_application_config`                                      | Application Settings                  | Get application config                                 |
+| `update_application_config`                                   | Application Settings                  | Update application config                              |
+| `get_all_endpoint_configs`                                    | Application Settings                  | Get all endpoint configs                               |
+| `create_endpoint_config`                                      | Application Settings                  | Create endpoint config                                 |
+| `delete_endpoint_config`                                      | Application Settings                  | Delete endpoint config                                 |
+| `get_endpoint_config`                                         | Application Settings                  | Get endpoint config                                    |
+| `update_endpoint_config`                                      | Application Settings                  | Update endpoint config                                 |
+| `get_all_manual_service_configs`                              | Application Settings                  | Get all manual service configs                         |
+| `add_manual_service_config`                                   | Application Settings                  | Add manual service config                              |
+| `delete_manual_service_config`                                | Application Settings                  | Delete manual service config                           |
+| `update_manual_service_config`                                | Application Settings                  | Update manual service config                           |
+| `replace_all_manual_service_config`                           | Application Settings                  | Replace all manual service configs                     |
+| `get_all_service_configs`                                     | Application Settings                  | Get all service configs                                |
+| `add_service_config`                                          | Application Settings                  | Add service config                                     |
+| `replace_all_service_configs`                                 | Application Settings                  | Replace all service configs                            |
+| `order_service_config`                                        | Application Settings                  | Order service config                                   |
+| `delete_service_config`                                       | Application Settings                  | Delete service config                                  |
+| `get_service_config`                                          | Application Settings                  | Get service config                                     |
+| `update_service_config`                                       | Application Settings                  | Update service config                                  |
+| **Application Alert Configuration**                           |                                       |                                                        |
+| `get_application_alert_configs`                               | Application Alert Configuration       | Get All Smart Alert Configurations                     |
+| `find_application_alert_config`                               | Application Alert Configuration       | Get Smart Alert Configuration                          |
+| `find_application_alert_config_versions`                      | Application Alert Configuration       | Get Smart Alert Config Versions                        |
+| `create_application_alert_config`                             | Application Alert Configuration       | Create Smart Alert Configuration                       |
+| `update_application_alert_config`                             | Application Alert Configuration       | Update Smart Alert Configuration                       |
+| `delete_application_alert_config`                             | Application Alert Configuration       | Delete Smart Alert Configuration                       |
+| `update_application_historic_baseline`                        | Application Alert Configuration       | Recalculate Smart Alert Config Baseline                |
+| `enable_application_alert_config`                             | Application Alert Configuration       | Enable Application Alert Config                        |
+| `disable_application_alert_config`                            | Application Alert Configuration       | Disable Smart Alert Config                             |
+| `restore_application_alert_config`                            | Application Alert Configuration       | Restore Smart Alert Config                             |
+| **Global Application Alert Configuration**                    |                                       |                                                        |
+| `find_active_global_application_alert_configs`                | Global Application Alert Config       | Find active global application alert configs           |
+| `find_global_application_alert_config_versions`               | Global Application Alert Config       | Find global application alert config versions          |
+| `find_global_application_alert_config`                        | Global Application Alert Config       | Find global application alert config                   |
+| `delete_global_application_alert_config`                      | Global Application Alert Config       | Delete global application alert config                 |
+| `enable_global_application_alert_config`                      | Global Application Alert Config       | Enable global application alert config                 |
+| `disable_global_application_alert_config`                     | Global Application Alert Config       | Disable global application alert config                |
+| `restore_global_application_alert_config`                     | Global Application Alert Config       | Restore global application alert config                |
+| `create_global_application_alert_config`                      | Global Application Alert Config       | Create global application alert config                 |
+| `update_global_application_alert_config`                      | Global Application Alert Config       | Update global application alert config                 |
+| **Infrastructure Analyze**                                    |                                       |                                                        |
+| `get_available_metrics`                                       | Infrastructure Analyze                | Get Available Metrics                                  |
+| `get_entities`                                                | Infrastructure Analyze                | Get infrastructure entities                            |
+| `get_aggregated_entity_groups`                                | Infrastructure Analyze                | Get grouped entities with aggregated metrics           |
+| `get_available_plugins`                                       | Infrastructure Analyze                | Get available entity types                             |
+| **Infrastructure Catalog**                                    |                                       |                                                        |
+| `get_available_payload_keys_by_plugin_id`                     | Infrastructure Catalog                | Get Payload Keys By plugin ID                          |
+| `get_infrastructure_catalog_metrics`                          | Infrastructure Catalog                | Get Infrastructure Catalog Metrics                     |
+| `get_infrastructure_catalog_plugins`                          | Infrastructure Catalog                | Get Infrastructure Catalog Plugins                     |
+| `get_infrastructure_catalog_plugins_with_custom_metrics`      | Infrastructure Catalog                | Get Infrastructure Catalog Plugins with Custom Metrics |
+| `get_infrastructure_catalog_search_fields`                    | Infrastructure Catalog                | Get Infrastructure Catalog Search Fields               |
+| `get_tag_catalog`                                             | Infrastructure Catalog                | Get Tag Catalog                                        |
+| `get_tag_catalog_all`                                         | Infrastructure Catalog                | Get Tag Catalog ALL                                    |
+| **Infrastructure Metrics**                                    |                                       |                                                        |
+| `get_infrastructure_metrics`                                  | Infrastructure Metrics                | Get infrastructure metrics                             |
+| **Infrastructure Resources**                                  |                                       |                                                        |
+| `get_monitoring_state`                                        | Infrastructure Resources              | Monitored host count                                   |
+| `get_snapshots`                                               | Infrastructure Resources              | Search snapshots                                       |
+| `post_snapshots`                                              | Infrastructure Resources              | Get snapshot details for multiple snapshots            |
+| `get_snapshot`                                                | Infrastructure Resources              | Get snapshot details                                   |
+| `software_versions`                                           | Infrastructure Resources              | Get installed software                                 |
+| **Infrastructure Topology**                                   |                                       |                                                        |
+| `get_related_hosts`                                           | Infrastructure Topology               | Get Related Hosts                                      |
+| `get_topology`                                                | Infrastructure Topology               | Get Topology                                           |
+| **Events**                                                    |                                       |                                                        |
+| `get_event`                                                   | Events                                | Get Specific Event by ID                               |
+| `get_events_by_ids`                                           | Events                                | Get Events by IDs                                      |
+| `get_agent_monitoring_events`                                 | Events                                | Get Agent Monitoring Events                            |
+| `get_kubernetes_info_events`                                  | Events                                | Get Kubernetes Info Events                             |
+| `get_issues`                                                  | Events                                | Get Issues                                             |
+| `get_incidents`                                               | Events                                | Get Incidents                                          |
+| `get_changes`                                                 | Events                                | Get Changes                                            |
+| **Website Monitoring**                                        |                                       |                                                        |
+| `get_website_beacon_groups`                                   | Website Analyze                       | Get website beacon groups                              |
+| `get_website_catalog_metrics`                                 | Website Catalog                       | Get website catalog metrics                            |
+| `get_website_catalog_tags`                                    | Website Catalog                       | Get website catalog tags                               |
+| `get_website_tag_catalog`                                     | Website Catalog                       | Get website tag catalog                                |
+| `get_websites`                                                | Website Configuration                 | Get websites                                           |
+| `get_website`                                                 | Website Configuration                 | Get website                                            |
+| `create_website`                                              | Website Configuration                 | Create website                                         |
+| `delete_website`                                              | Website Configuration                 | Delete website                                         |
+| `update_website`                                              | Website Configuration                 | Update website                                         |
+| `get_website_page_load`                                       | Website Metrics                       | Get website page load                                  |
+| `get_website_beacon_metrics_v2`                               | Website Metrics                       | Get website beacon metrics V2                          |
+| **Custom Dashboards**                                         |                                       |                                                        |
+| `get_custom_dashboards`                                       | Custom Dashboards                     | Get custom dashboards                                  |
+| `get_custom_dashboard`                                        | Custom Dashboards                     | Get custom dashboard                                   |
+| `create_custom_dashboard`                                     | Custom Dashboards                     | Create custom dashboard                                |
+| `delete_custom_dashboard`                                     | Custom Dashboards                     | Delete custom dashboard                                |
+| `update_custom_dashboard`                                     | Custom Dashboards                     | Update custom dashboard                                |
+| **Automation**                                                |                                       |                                                        |
+| `get_action_matches`                                          | Action Catalog                        | Get action matches                                     |
+| `get_action_catalog`                                          | Action Catalog                        | Get action catalog                                     |
+| `get_action_history`                                          | Action History                        | Get action history                                     |
+| **Log Management**                                            |                                       |                                                        |
+| `create_log_alert_config`                                     | Log Alert Configuration               | Create log alert config                                |
+| `delete_log_alert_config`                                     | Log Alert Configuration               | Delete log alert config                                |
+| `get_log_alert_config`                                        | Log Alert Configuration               | Get log alert config                                   |
+| `get_log_alert_configs`                                       | Log Alert Configuration               | Get log alert configs                                  |
+| `update_log_alert_config`                                     | Log Alert Configuration               | Update log alert config                                |
 
 
 ## Tool Filtering
@@ -709,17 +878,17 @@ The MCP server supports selective tool loading to optimize performance and reduc
   - Infrastructure Catalog: Plugin metadata, metrics definitions, tag management
   - Infrastructure Topology: Host relationships and system topology visualization
   - Infrastructure Analyze: Entity metrics, aggregation, and plugin discovery
-  - Infrastructure Metrics: Performance data collection
+  - Infrastructure Metrics: Performance data collection and metrics retrieval
 
 - **`app`**: Application performance tools
+  - Application Analyze: Trace and call analysis, performance diagnostics
   - Application Resources: Service and endpoint discovery
   - Application Metrics: Performance measurement across application components
-  - Application Alert Configuration: Smart alert management
-  - Application Catalog: Metadata and definitions
-  - Application Topology: Service dependency mapping
-  - Application Analyze: Application performance analysis
-  - Application Settings: Configuration management
-  - Application Global Alert: Global alert management
+  - Application Catalog: Tag and metric catalog management
+  - Application Topology: Service dependency mapping and visualization
+  - Application Settings: Application, endpoint, and service configuration management
+  - Application Alert Configuration: Smart alert management and configuration
+  - Global Application Alert Configuration: Global alert policies and management
 
 - **`events`**: Event monitoring tools
   - Events: Kubernetes events, agent monitoring, incidents, issues, changes and system event tracking
@@ -729,10 +898,16 @@ The MCP server supports selective tool loading to optimize performance and reduc
   - Action History: Tracking and managing automation action history
 
 - **`website`**: Website monitoring tools
-  - Website Metrics: Performance measurement for websites
-  - Website Catalog: Website metadata and definitions
-  - Website Analyze: Website performance analysis
-  - Website Configuration: Website configuration management
+  - Website Analyze: Website beacon analysis and performance insights
+  - Website Catalog: Website metadata, metrics, and tag definitions
+  - Website Configuration: Website setup and configuration management
+  - Website Metrics: Page load metrics and beacon data collection
+
+- **`settings`**: Settings and configuration tools
+  - Custom Dashboards: Dashboard creation, management, and customization
+
+- **`logs`**: Log management tools
+  - Log Alert Configuration: Log-based alert setup and management
 
 ### Usage Examples
 
@@ -747,6 +922,12 @@ mcp-instana --tools app --transport streamable-http
 
 # Enable automation and website tools
 mcp-instana --tools automation,website --transport streamable-http
+
+# Enable settings and logs tools
+mcp-instana --tools settings,logs --transport streamable-http
+
+# Enable multiple categories
+mcp-instana --tools app,infra,events,website --transport streamable-http
 
 # Enable all tools (default behavior)
 mcp-instana --transport streamable-http
