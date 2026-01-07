@@ -629,18 +629,53 @@ Here is an example of a GitHub Copilot response:
 
 ## Supported Features
 
-- [ ] Application
-  - [x] Application Metrics
-    - [x] Application Metrics
-    - [x] Endpoint Metrics
-    - [x] Service Metrics
-    - [x] Data Metrics
-  - [x] Application Resources
+- [ ] **Application**
+  - [ ] **Application Analyze**
+    - [ ] Get Call Details
+    - [ ] Get Trace Details
+    - [ ] Get All Traces
+    - [ ] Get Grouped Trace Metrics
+    - [ ] Get Grouped Calls Metrics
+    - [ ] Get Correlated Traces
+  - [ ] **Application Metrics**
+    - [ ] Get Application Data Metrics V2
+    - [ ] Get Application Metrics
+    - [ ] Get Endpoints Metrics
+    - [ ] Get Services Metrics
+  - [x] **Application Resources**
     - [x] Get Applications Endpoints
     - [x] Get Applications
     - [x] Get Services
     - [x] Get Application Services
-  - [x] Application Alert Configuration
+  - [ ] **Application Catalog**
+    - [ ] Get Application Tag Catalog
+    - [ ] Get Application Metric Catalog
+  - [ ] **Application Topology**
+    - [ ] Get Application Topology (Service Map)
+  - [ ] **Application Settings**
+    - [ ] Get All Applications Configs
+    - [ ] Add Application Config
+    - [ ] Delete Application Config
+    - [ ] Get Application Config
+    - [ ] Update Application Config
+    - [ ] Get All Endpoint Configs
+    - [ ] Create Endpoint Config
+    - [ ] Delete Endpoint Config
+    - [ ] Get Endpoint Config
+    - [ ] Update Endpoint Config
+    - [ ] Get All Manual Service Configs
+    - [ ] Add Manual Service Config
+    - [ ] Delete Manual Service Config
+    - [ ] Update Manual Service Config
+    - [ ] Replace All Manual Service Config
+    - [ ] Get All Service Configs
+    - [ ] Add Service Config
+    - [ ] Replace All Service Configs
+    - [ ] Order Service Config
+    - [ ] Delete Service Config
+    - [ ] Get Service Config
+    - [ ] Update Service Config
+  - [x] **Application Alert Configuration**
     - [x] Get All Smart Alert Configurations
     - [x] Get Smart Alert Configuration
     - [x] Get Smart Alert Config Versions
@@ -651,9 +686,25 @@ Here is an example of a GitHub Copilot response:
     - [x] Enable Application Alert Config
     - [x] Disable Smart Alert Config
     - [x] Restore Smart Alert Config
-- [ ] Infrastructure
-  - [ ] Infrastructure Analyze
+  - [ ] **Global Application Alert Configuration**
+    - [ ] Find Active Global Application Alert Configs
+    - [ ] Find Global Application Alert Config Versions
+    - [ ] Find Global Application Alert Config
+    - [ ] Delete Global Application Alert Config
+    - [ ] Enable Global Application Alert Config
+    - [ ] Disable Global Application Alert Config
+    - [ ] Restore Global Application Alert Config
+    - [ ] Create Global Application Alert Config
+    - [ ] Update Global Application Alert Config
+
+- [ ] **Infrastructure**
+  - [ ] **Infrastructure Analyze**
     - [x] Get Available Metrics
+    - [ ] Get Infrastructure Entities
+    - [ ] Get Grouped Entities with Aggregated Metrics
+    - [x] Get Available Plugins/Entity Types
+  - [x] **Infrastructure Catalog**
+    - [x] Get Payload Keys By Plugin ID
     - [ ] Get infrastructure entities
     - [x] Get grouped entities with aggregated metrics
     - [x] Get available plugins/entity types
@@ -666,15 +717,20 @@ Here is an example of a GitHub Copilot response:
     - [x] Get Infrastructure Catalog Search Fields with Custom Metrics
     - [x] Get Tag Catalog
     - [x] Get Tag Catalog ALL
+  - [ ] **Infrastructure Metrics**
+    - [ ] Get Infrastructure Metrics
+  - [ ] **Infrastructure Resources**
+    - [x] Get Monitoring State
+    - [ ] Get Plugin Payload
   - [x] Infrastructure Resources
     - [x] Get Monitoring State
     - [x] Search Snapshots
-    - [x] Get Snapshot Details for single Snapshot ID
+    - [x] Get Snapshot Details for Single Snapshot ID
     - [x] Get Details for Multiple Snapshot IDs
     - [x] Search and discover snapshots based on search criteria
     - [x] Software Versions
-  - [x] Infrastructure Topology
-    - [x] Get Hosts for Snapshot
+  - [x] **Infrastructure Topology**
+    - [x] Get Related Hosts for Snapshot
     - [x] Get Topology
   - [x] Events
     - [x] Events
@@ -792,26 +848,32 @@ The MCP server supports selective tool loading to optimize performance and reduc
   - Infrastructure Catalog: Plugin metadata, metrics definitions, tag management
   - Infrastructure Topology: Host relationships and system topology visualization
   - Infrastructure Analyze: Entity metrics, aggregation, and plugin discovery
-  - Infrastructure Metrics: Performance data collection
+  - Infrastructure Metrics: Performance data collection and metrics retrieval
 
 - **`app`**: Application performance tools
+  - Application Analyze: Trace and call analysis, performance diagnostics
   - Application Resources: Service and endpoint discovery
   - Application Metrics: Performance measurement across application components
-  - Application Alert Configuration: Smart alert management
-  - Application Catalog: Metadata and definitions
-  - Application Topology: Service dependency mapping
-  - Application Analyze: Application performance analysis
-  - Application Settings: Configuration management
-  - Application Global Alert: Global alert management
+  - Application Catalog: Tag and metric catalog management
+  - Application Topology: Service dependency mapping and visualization
+  - Application Settings: Application, endpoint, and service configuration management
+  - Application Alert Configuration: Smart alert management and configuration
+  - Global Application Alert Configuration: Global alert policies and management
 
 - **`events`**: Event monitoring tools
   - Events: Kubernetes events, agent monitoring, incidents, issues, changes and system event tracking
 
 - **`website`**: Website monitoring tools
-  - Website Metrics: Performance measurement for websites
-  - Website Catalog: Website metadata and definitions
-  - Website Analyze: Website performance analysis
-  - Website Configuration: Website configuration management
+  - Website Analyze: Website beacon analysis and performance insights
+  - Website Catalog: Website metadata, metrics, and tag definitions
+  - Website Configuration: Website setup and configuration management
+  - Website Metrics: Page load metrics and beacon data collection
+
+- **`settings`**: Settings and configuration tools
+  - Custom Dashboards: Dashboard creation, management, and customization
+
+- **`logs`**: Log management tools
+  - Log Alert Configuration: Log-based alert setup and management
 
 ### Usage Examples
 
@@ -826,6 +888,12 @@ mcp-instana --tools app --transport streamable-http
 
 # Enable events and website tools
 mcp-instana --tools events,website --transport streamable-http
+
+# Enable settings and logs tools
+mcp-instana --tools settings,logs --transport streamable-http
+
+# Enable multiple categories
+mcp-instana --tools app,infra,events,website --transport streamable-http
 
 # Enable all tools (default behavior)
 mcp-instana --transport streamable-http
