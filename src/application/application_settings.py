@@ -363,7 +363,7 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
         try:
             if not id:
                 return {"error": "Application perspective ID is required"}
-            
+
             debug_print(f"Fetching application perspective with ID: {id}")
             # Use raw JSON response to avoid Pydantic validation issues
             result = api_client.get_application_config_without_preload_content(id=id)
