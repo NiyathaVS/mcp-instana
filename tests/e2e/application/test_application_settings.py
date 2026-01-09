@@ -310,14 +310,17 @@ class TestApplicationSettingsE2E:
     async def test_get_application_config_missing_id(self, instana_credentials):
         """Test getting application config with missing ID."""
 
+        # Create mock API client to prevent real HTTP calls
+        mock_api_client = MagicMock()
+
         # Create the client
         client = ApplicationSettingsMCPTools(
             read_token=instana_credentials["api_token"],
             base_url=instana_credentials["base_url"]
         )
 
-        # Test the method with missing ID (no api_client needed as it should fail early)
-        result = await client.get_application_config(id="")
+        # Test the method with missing ID
+        result = await client.get_application_config(id="", api_client=mock_api_client)
 
         # Verify the result
         assert isinstance(result, dict)
@@ -1065,16 +1068,16 @@ class TestApplicationSettingsE2E:
 
         # Create mock API client
         mock_api_client = MagicMock()
-        mock_api_client.get_service_config = MagicMock()
 
-        # Mock response
+        # Mock response - the method expects a response object with data attribute
         mock_response = MagicMock()
-        mock_response.to_dict.return_value = {
+        import json
+        mock_response.data = json.dumps({
             "id": "service-123",
             "name": "Test Service",
             "type": "JAVA"
-        }
-        mock_api_client.get_service_config.return_value = mock_response
+        }).encode('utf-8')
+        mock_api_client.get_service_config_without_preload_content = MagicMock(return_value=mock_response)
 
         # Create the client
         client = ApplicationSettingsMCPTools(
@@ -1094,7 +1097,7 @@ class TestApplicationSettingsE2E:
         assert result["name"] == "Test Service"
 
         # Verify the API was called correctly
-        mock_api_client.get_service_config.assert_called_once_with(id="service-123")
+        mock_api_client.get_service_config_without_preload_content.assert_called_once_with(id="service-123")
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
