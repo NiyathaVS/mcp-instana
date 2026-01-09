@@ -630,51 +630,51 @@ Here is an example of a GitHub Copilot response:
 ## Supported Features
 
 - [ ] **Application**
-  - [ ] **Application Analyze**
-    - [ ] Get Call Details
-    - [ ] Get Trace Details
-    - [ ] Get All Traces
-    - [ ] Get Grouped Trace Metrics
-    - [ ] Get Grouped Calls Metrics
-    - [ ] Get Correlated Traces
-  - [ ] **Application Metrics**
-    - [ ] Get Application Data Metrics V2
-    - [ ] Get Application Metrics
-    - [ ] Get Endpoints Metrics
-    - [ ] Get Services Metrics
+  - [x] **Application Analyze**
+    - [x] Get Call Details
+    - [x] Get Trace Details
+    - [x] Get All Traces
+    - [x] Get Grouped Trace Metrics
+    - [x] Get Grouped Calls Metrics
+    - [x] Get Correlated Traces
+  - [x] **Application Metrics**
+    - [x] Get Application Data Metrics V2
+    - [x] Get Application Metrics
+    - [x] Get Endpoints Metrics
+    - [x] Get Services Metrics
   - [x] **Application Resources**
     - [x] Get Applications Endpoints
     - [x] Get Applications
     - [x] Get Services
     - [x] Get Application Services
-  - [ ] **Application Catalog**
-    - [ ] Get Application Tag Catalog
-    - [ ] Get Application Metric Catalog
+  - [x] **Application Catalog**
+    - [x] Get Application Tag Catalog
+    - [x] Get Application Metric Catalog
   - [ ] **Application Topology**
     - [ ] Get Application Topology (Service Map)
-  - [ ] **Application Settings**
-    - [ ] Get All Applications Configs
-    - [ ] Add Application Config
-    - [ ] Delete Application Config
-    - [ ] Get Application Config
-    - [ ] Update Application Config
-    - [ ] Get All Endpoint Configs
-    - [ ] Create Endpoint Config
-    - [ ] Delete Endpoint Config
-    - [ ] Get Endpoint Config
-    - [ ] Update Endpoint Config
-    - [ ] Get All Manual Service Configs
-    - [ ] Add Manual Service Config
-    - [ ] Delete Manual Service Config
-    - [ ] Update Manual Service Config
-    - [ ] Replace All Manual Service Config
-    - [ ] Get All Service Configs
-    - [ ] Add Service Config
-    - [ ] Replace All Service Configs
-    - [ ] Order Service Config
-    - [ ] Delete Service Config
-    - [ ] Get Service Config
-    - [ ] Update Service Config
+  - [x] **Application Settings**
+    - [x] Get All Applications Configs
+    - [x] Add Application Config
+    - [x] Delete Application Config
+    - [x] Get Application Config
+    - [x] Update Application Config
+    - [x] Get All Endpoint Configs
+    - [x] Create Endpoint Config
+    - [x] Delete Endpoint Config
+    - [x] Get Endpoint Config
+    - [x] Update Endpoint Config
+    - [x] Get All Manual Service Configs
+    - [x] Add Manual Service Config
+    - [x] Delete Manual Service Config
+    - [x] Update Manual Service Config
+    - [x] Replace All Manual Service Config
+    - [x] Get All Service Configs
+    - [x] Add Service Config
+    - [x] Replace All Service Configs
+    - [x] Order Service Config
+    - [x] Delete Service Config
+    - [x] Get Service Config
+    - [x] Update Service Config
   - [x] **Application Alert Configuration**
     - [x] Get All Smart Alert Configurations
     - [x] Get Smart Alert Configuration
@@ -687,15 +687,15 @@ Here is an example of a GitHub Copilot response:
     - [x] Disable Smart Alert Config
     - [x] Restore Smart Alert Config
   - [ ] **Global Application Alert Configuration**
-    - [ ] Find Active Global Application Alert Configs
-    - [ ] Find Global Application Alert Config Versions
-    - [ ] Find Global Application Alert Config
-    - [ ] Delete Global Application Alert Config
-    - [ ] Enable Global Application Alert Config
-    - [ ] Disable Global Application Alert Config
-    - [ ] Restore Global Application Alert Config
-    - [ ] Create Global Application Alert Config
-    - [ ] Update Global Application Alert Config
+    - [x] Find Active Global Application Alert Configs
+    - [x] Find Global Application Alert Config Versions
+    - [x] Find Global Application Alert Config
+    - [x] Delete Global Application Alert Config
+    - [x] Enable Global Application Alert Config
+    - [x] Disable Global Application Alert Config
+    - [x] Restore Global Application Alert Config
+    - [x] Create Global Application Alert Config
+    - [x] Update Global Application Alert Config
 
 - [ ] **Infrastructure**
   - [ ] **Infrastructure Analyze**
