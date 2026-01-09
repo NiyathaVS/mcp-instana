@@ -362,6 +362,9 @@ class TestApplicationSettingsMCPTools(unittest.TestCase):
     def test_order_service_config_empty_list(self):
         """Test order_service_config with empty list"""
         # Call the method with an empty list
+        if not id:
+            return {"error": "Application perspective ID is required"}
+
         result = asyncio.run(self.client.order_service_config(request_body=[]))
 
         # Check that the result contains an error message
