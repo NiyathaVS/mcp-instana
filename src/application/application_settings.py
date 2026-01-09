@@ -326,17 +326,19 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
         """
         try:
             debug_print(f"Fetching application perspective with ID: {id}")
-            # Call the get_application_config method from the SDK
-            result = api_client.get_application_config(id=id)
+            # Use raw JSON response to avoid Pydantic validation issues
+            result = api_client.get_application_config_without_preload_content(id=id)
+            import json
+            try:
+                response_text = result.data.decode('utf-8')
+                result_dict = json.loads(response_text)
+                debug_print("Successfully retrieved application config data")
+                return result_dict
+            except (json.JSONDecodeError, AttributeError) as json_err:
+                error_message = f"Failed to parse JSON response: {json_err}"
+                debug_print(error_message)
+                return {"error": error_message}
 
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                result_dict = result
-
-            debug_print(f"Result from get_application_config: {result_dict}")
-            return result_dict
         except Exception as e:
             debug_print(f"Error in get_application_config: {e}")
             traceback.print_exc(file=sys.stderr)
@@ -517,16 +519,24 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
         """
         try:
             debug_print("Fetching all endpoint configs")
-            result = api_client.get_endpoint_configs()
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                # If it's already a dict or another format, use it as is
-                result_dict = result
-
-            debug_print(f"Result from get_endpoint_configs: {result_dict}")
-            return result_dict
+            # Use raw JSON response to avoid Pydantic validation issues
+            result = api_client.get_endpoint_configs_without_preload_content()
+            import json
+            try:
+                response_text = result.data.decode('utf-8')
+                json_data = json.loads(response_text)
+                # Convert to List[Dict[str, Any]] format
+                if isinstance(json_data, list):
+                    result_dict = json_data
+                else:
+                    # If it's a single object, wrap it in a list
+                    result_dict = [json_data] if json_data else []
+                debug_print("Successfully retrieved endpoint configs data")
+                return result_dict
+            except (json.JSONDecodeError, AttributeError) as json_err:
+                error_message = f"Failed to parse JSON response: {json_err}"
+                debug_print(error_message)
+                return [{"error": error_message}]
 
         except Exception as e:
             debug_print(f"Error in get_endpoint_configs: {e}")
@@ -705,22 +715,23 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
             if not id:
                 return {"error": "Required enitities are missing or invalid"}
 
-            result = api_client.get_endpoint_config(
-                id=id
-            )
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                # If it's already a dict or another format, use it as is
-                result_dict = result
+            # Use raw JSON response to avoid Pydantic validation issues
+            result = api_client.get_endpoint_config_without_preload_content(id=id)
+            import json
+            try:
+                response_text = result.data.decode('utf-8')
+                result_dict = json.loads(response_text)
+                debug_print("Successfully retrieved endpoint config data")
+                return result_dict
+            except (json.JSONDecodeError, AttributeError) as json_err:
+                error_message = f"Failed to parse JSON response: {json_err}"
+                debug_print(error_message)
+                return {"error": error_message}
 
-            debug_print(f"Result from get_endpoint_configs: {result_dict}")
-            return result_dict
         except Exception as e:
-            debug_print(f"Error in get_endpoint_configs: {e}")
+            debug_print(f"Error in get_endpoint_config: {e}")
             traceback.print_exc(file=sys.stderr)
-            return {"error": f"Failed to get endpoint configs: {e!s}"}
+            return {"error": f"Failed to get endpoint config: {e!s}"}
 
     @register_as_tool(
         title="Update Endpoint Config",
@@ -870,16 +881,24 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
         """
         try:
             debug_print("Fetching all manual configs")
-            result = api_client.get_all_manual_service_configs()
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                # If it's already a dict or another format, use it as is
-                result_dict = result
-
-            debug_print(f"Result from get_all_manual_service_configs: {result_dict}")
-            return result_dict
+            # Use raw JSON response to avoid Pydantic validation issues
+            result = api_client.get_all_manual_service_configs_without_preload_content()
+            import json
+            try:
+                response_text = result.data.decode('utf-8')
+                json_data = json.loads(response_text)
+                # Convert to List[Dict[str, Any]] format
+                if isinstance(json_data, list):
+                    result_dict = json_data
+                else:
+                    # If it's a single object, wrap it in a list
+                    result_dict = [json_data] if json_data else []
+                debug_print("Successfully retrieved manual service configs data")
+                return result_dict
+            except (json.JSONDecodeError, AttributeError) as json_err:
+                error_message = f"Failed to parse JSON response: {json_err}"
+                debug_print(error_message)
+                return [{"error": error_message}]
 
         except Exception as e:
             debug_print(f"Error in get_all_manual_service_configs: {e}")
@@ -1318,21 +1337,29 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
         """
         try:
             debug_print("Fetching all service configs")
-            result = api_client.get_service_configs()
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                # If it's already a dict or another format, use it as is
-                result_dict = result
-
-            debug_print(f"Result from get_service_configs: {result_dict}")
-            return result_dict
+            # Use raw JSON response to avoid Pydantic validation issues
+            result = api_client.get_service_configs_without_preload_content()
+            import json
+            try:
+                response_text = result.data.decode('utf-8')
+                json_data = json.loads(response_text)
+                # Convert to List[Dict[str, Any]] format
+                if isinstance(json_data, list):
+                    result_dict = json_data
+                else:
+                    # If it's a single object, wrap it in a list
+                    result_dict = [json_data] if json_data else []
+                debug_print("Successfully retrieved service configs data")
+                return result_dict
+            except (json.JSONDecodeError, AttributeError) as json_err:
+                error_message = f"Failed to parse JSON response: {json_err}"
+                debug_print(error_message)
+                return [{"error": error_message}]
 
         except Exception as e:
             debug_print(f"Error in get_all_service_configs: {e}")
             traceback.print_exc(file=sys.stderr)
-            return [{"error": f"Failed to get application data metrics: {e}"}]
+            return [{"error": f"Failed to get service configs: {e}"}]
 
     @register_as_tool(
         title="Add Service Config",
@@ -1671,18 +1698,19 @@ class ApplicationSettingsMCPTools(BaseInstanaClient):
             if not id:
                 return {"error": "Required entities are missing or invalid"}
 
-            result = api_client.get_service_config(
-                id=id
-            )
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                # If it's already a dict or another format, use it as is
-                result_dict = result
+            # Use raw JSON response to avoid Pydantic validation issues
+            result = api_client.get_service_config_without_preload_content(id=id)
+            import json
+            try:
+                response_text = result.data.decode('utf-8')
+                result_dict = json.loads(response_text)
+                debug_print("Successfully retrieved service config data")
+                return result_dict
+            except (json.JSONDecodeError, AttributeError) as json_err:
+                error_message = f"Failed to parse JSON response: {json_err}"
+                debug_print(error_message)
+                return {"error": error_message}
 
-            debug_print(f"Result from get_service_config: {result_dict}")
-            return result_dict
         except Exception as e:
             debug_print(f"Error in get_service_config: {e}")
             traceback.print_exc(file=sys.stderr)
