@@ -732,10 +732,9 @@ Here is an example of a GitHub Copilot response:
   - [x] **Infrastructure Topology**
     - [x] Get Related Hosts for Snapshot
     - [x] Get Topology
-  - [x] Events
-    - [x] Events
-      - [x] Get Event
-      - [x] Get Events by IDs
+- [x] Events
+  - [x] Get Event
+  - [x] Get Events by IDs
       - [x] Get Agent Monitoring Events
       - [x] Get Kubernetes Info Events
       - [x] Get Issues
@@ -766,6 +765,41 @@ Here is an example of a GitHub Copilot response:
     - [ ] Set Website Geo Mapping Rules
     - [ ] Upload Source Map File
     - [ ] Clear Source Map Upload 
+- [x] **Automation**
+  - [x] **Action Catalog**
+    - [x] Get Action Matches
+    - [x] Get Actions
+    - [x] Get Action Details
+    - [x] Get Action Types
+    - [x] Get Action Tags
+  - [x] **Action History**
+    - [x] Submit Automation Action
+    - [x] Get Action Instance Details
+    - [x] List Action Instances
+    - [x] Delete Action Instance
+
+- [x] **Settings**
+  - [x] **Custom Dashboards**
+    - [x] Get Custom Dashboards
+    - [x] Get Custom Dashboard
+    - [x] Add Custom Dashboard
+    - [x] Update Custom Dashboard
+    - [x] Delete Custom Dashboard
+    - [x] Get Shareable Users
+    - [x] Get Shareable API Tokens
+
+- [x] **Log**
+  - [x] **Log Alert Configuration**
+    - [x] Create Log Alert Config
+    - [x] Delete Log Alert Config
+    - [x] Disable Log Alert Config
+    - [x] Enable Log Alert Config
+    - [x] Find Active Log Alert Configs
+    - [x] Find Log Alert Config
+    - [x] Find Log Alert Config Versions
+    - [x] Restore Log Alert Config
+    - [x] Update Log Alert Config
+
 
 ## Available Tools
 
@@ -834,6 +868,31 @@ Here is an example of a GitHub Copilot response:
 | `get_website_geo_mapping_rules`                               | Website Configuration          | Get custom geo mapping rules for website               |
 | `set_website_geo_mapping_rules`                               | Website Configuration          | Set custom geo mapping rules for website               |
 | `upload_source_map_file`                                      | Website Configuration          | Upload source map file for a website                   |
+| `get_action_matches`                                          | Automation Action Catalog      | Get action matches based on payload                    |
+| `get_actions`                                                 | Automation Action Catalog      | Get all available actions                              |
+| `get_action_details`                                          | Automation Action Catalog      | Get details for a specific action                      |
+| `get_action_types`                                            | Automation Action Catalog      | Get all available action types                         |
+| `get_action_tags`                                             | Automation Action Catalog      | Get all available action tags                          |
+| `submit_automation_action`                                    | Automation Action History      | Submit an automation action for execution              |
+| `get_action_instance_details`                                 | Automation Action History      | Get details for a specific action instance             |
+| `list_action_instances`                                       | Automation Action History      | List all action instances                              |
+| `delete_action_instance`                                      | Automation Action History      | Delete a specific action instance                      |
+| `get_custom_dashboards`                                       | Settings Custom Dashboards     | Get all custom dashboards                              |
+| `get_custom_dashboard`                                        | Settings Custom Dashboards     | Get a specific custom dashboard by ID                  |
+| `add_custom_dashboard`                                        | Settings Custom Dashboards     | Create a new custom dashboard                          |
+| `update_custom_dashboard`                                     | Settings Custom Dashboards     | Update an existing custom dashboard                    |
+| `delete_custom_dashboard`                                     | Settings Custom Dashboards     | Delete a custom dashboard                              |
+| `get_shareable_users`                                         | Settings Custom Dashboards     | Get users who can access a dashboard                   |
+| `get_shareable_api_tokens`                                    | Settings Custom Dashboards     | Get API tokens that can access a dashboard             |
+| `create_log_alert_config`                                     | Log Alert Configuration        | Create a new log alert configuration                   |
+| `delete_log_alert_config`                                     | Log Alert Configuration        | Delete a log alert configuration                       |
+| `disable_log_alert_config`                                    | Log Alert Configuration        | Disable a log alert configuration                      |
+| `enable_log_alert_config`                                     | Log Alert Configuration        | Enable a log alert configuration                       |
+| `find_active_log_alert_configs`                               | Log Alert Configuration        | Find all active log alert configurations               |
+| `find_log_alert_config`                                       | Log Alert Configuration        | Find a specific log alert configuration                |
+| `find_log_alert_config_versions`                              | Log Alert Configuration        | Find all versions of a log alert configuration         |
+| `restore_log_alert_config`                                    | Log Alert Configuration        | Restore a previous version of log alert configuration  |
+| `update_log_alert_config`                                     | Log Alert Configuration        | Update an existing log alert configuration             |
 | `clear_source_map_upload_configuration`                       | Website Configuration          | Clear source map upload configuration for a website    |
 
 
@@ -868,6 +927,10 @@ The MCP server supports selective tool loading to optimize performance and reduc
   - Website Catalog: Website metadata, metrics, and tag definitions
   - Website Configuration: Website setup and configuration management
   - Website Metrics: Page load metrics and beacon data collection
+- **`automation`**: Automation tools
+  - Action Catalog: Action discovery, types, and tag management
+  - Action History: Action execution, instance tracking, and management
+
 
 - **`settings`**: Settings and configuration tools
   - Custom Dashboards: Dashboard creation, management, and customization
