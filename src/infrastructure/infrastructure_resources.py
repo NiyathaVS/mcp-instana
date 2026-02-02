@@ -39,10 +39,7 @@ class InfrastructureResourcesMCPTools(BaseInstanaClient):
         """Initialize the Infrastructure Resources MCP tools client."""
         super().__init__(read_token=read_token, base_url=base_url)
 
-    @register_as_tool(
-        title="Get Monitoring State",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureResourcesApi)
     async def get_monitoring_state(self, ctx=None, api_client=None) -> Dict[str, Any]:
         """
@@ -109,10 +106,7 @@ class InfrastructureResourcesMCPTools(BaseInstanaClient):
             logger.error(f"Error in get_plugin_payload: {e}", exc_info=True)
             return {"error": f"Failed to get plugin payload: {e!s}"}
 
-    @register_as_tool(
-        title="Get Snapshot",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureResourcesApi)
     async def get_snapshot(self,
                            snapshot_id: str,
@@ -220,10 +214,7 @@ class InfrastructureResourcesMCPTools(BaseInstanaClient):
             logger.error(f"Error in get_snapshot: {e}", exc_info=True)
             return {"error": f"Failed to get snapshot: {e!s}"}
 
-    @register_as_tool(
-        title="Get Snapshots",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureResourcesApi)
     async def get_snapshots(self,
                             query: Optional[str] = None,
@@ -378,10 +369,7 @@ class InfrastructureResourcesMCPTools(BaseInstanaClient):
 
 
 
-    @register_as_tool(
-        title="Post Snapshots",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureResourcesApi)
     async def post_snapshots(self,
                              snapshot_ids: Union[List[str], str],
@@ -559,10 +547,7 @@ class InfrastructureResourcesMCPTools(BaseInstanaClient):
 
 
 
-    @register_as_tool(
-        title="Software Versions",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureResourcesApi)
     async def software_versions(self, ctx=None, api_client=None) -> Dict[str, Any]:
         """

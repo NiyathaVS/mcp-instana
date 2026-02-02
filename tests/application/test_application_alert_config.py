@@ -116,6 +116,35 @@ class TestApplicationAlertMCPTools(unittest.TestCase):
         self.assertEqual(self.client.read_token, self.read_token)
         self.assertEqual(self.client.base_url, self.base_url)
 
+    def test_find_active_application_alert_configs_success(self):
+        """Test find_active_application_alert_configs with successful response"""
+        # Set up the mock response
+        mock_response = MagicMock()
+        mock_response.data = b'[{"id": "alert1", "name": "Test Alert"}]'
+        self.alert_config_api.find_active_application_alert_configs_without_preload_content.return_value = mock_response
+
+        # Call the method
+        result = asyncio.run(self.client.find_active_application_alert_configs(application_id="app1"))
+
+        # Check that the mock was called with the correct arguments
+        self.alert_config_api.find_active_application_alert_configs_without_preload_content.assert_called_once_with(
+            application_id="app1",
+            alert_ids=None
+        )
+
+        # Check that the result is correct
+        self.assertIn("configs", result)
+        self.assertEqual(len(result["configs"]), 1)
+
+    def test_find_active_application_alert_configs_missing_application_id(self):
+        """Test find_active_application_alert_configs with missing application_id"""
+        # Call the method without application_id
+        result = asyncio.run(self.client.find_active_application_alert_configs(application_id=None))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertEqual(result["error"], "application_id is required")
+
     def test_find_application_alert_config_success(self):
         """Test find_application_alert_config with successful response"""
         # Set up the mock response
@@ -135,15 +164,6 @@ class TestApplicationAlertMCPTools(unittest.TestCase):
 
         # Check that the result is correct
         self.assertEqual(result, mock_result)
-
-    def test_find_application_alert_config_missing_id(self):
-        """Test find_application_alert_config with missing ID"""
-        # Call the method without ID
-        result = asyncio.run(self.client.find_application_alert_config(id=None))
-
-        # Check that the result contains an error message
-        self.assertIn("error", result)
-        self.assertEqual(result["error"], "id is required")
 
     def test_find_application_alert_config_error(self):
         """Test find_application_alert_config error handling"""
@@ -197,39 +217,128 @@ class TestApplicationAlertMCPTools(unittest.TestCase):
         self.assertIn("error", result)
         self.assertIn("Failed to get application alert config versions", result["error"])
 
-    def test_get_application_alert_configs_success(self):
-        """Test get_application_alert_configs with successful response"""
+    def test_disable_application_alert_config_success(self):
+        """Test disable_application_alert_config with successful response"""
         # Set up the mock response
-        mock_result = [{"id": "alert1"}, {"id": "alert2"}]
-        mock_obj1 = MagicMock()
-        mock_obj1.to_dict.return_value = mock_result[0]
-        mock_obj2 = MagicMock()
-        mock_obj2.to_dict.return_value = mock_result[1]
-        self.alert_config_api.find_active_application_alert_configs.return_value = [mock_obj1, mock_obj2]
+        mock_result = {"id": "alert1", "enabled": False}
+        mock_obj = MagicMock()
+        mock_obj.to_dict.return_value = mock_result
+        self.alert_config_api.disable_application_alert_config.return_value = mock_obj
 
         # Call the method
-        result = asyncio.run(self.client.get_application_alert_configs())
+        result = asyncio.run(self.client.disable_application_alert_config(id="alert1"))
 
         # Check that the mock was called with the correct arguments
-        self.alert_config_api.find_active_application_alert_configs.assert_called_once_with(
-            application_id=None,
-            alert_ids=None
-        )
+        self.alert_config_api.disable_application_alert_config.assert_called_once_with(id="alert1")
 
         # Check that the result is correct
-        self.assertEqual(result, {"configs": mock_result})
+        self.assertEqual(result, mock_result)
 
-    def test_get_application_alert_configs_error(self):
-        """Test get_application_alert_configs error handling"""
-        # Set up the mock to raise an exception
-        self.alert_config_api.find_active_application_alert_configs.side_effect = Exception("Test error")
-
-        # Call the method
-        result = asyncio.run(self.client.get_application_alert_configs())
+    def test_disable_application_alert_config_missing_id(self):
+        """Test disable_application_alert_config with missing ID"""
+        # Call the method without ID
+        result = asyncio.run(self.client.disable_application_alert_config(id=None))
 
         # Check that the result contains an error message
         self.assertIn("error", result)
-        self.assertIn("Failed to get application alert configs", result["error"])
+        self.assertEqual(result["error"], "id is required")
+
+    def test_disable_application_alert_config_error(self):
+        """Test disable_application_alert_config error handling"""
+        # Set up the mock to raise an exception
+        self.alert_config_api.disable_application_alert_config.side_effect = Exception("Test error")
+
+        # Call the method
+        result = asyncio.run(self.client.disable_application_alert_config(id="alert1"))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertIn("Failed to disable application alert config", result["error"])
+
+    def test_restore_application_alert_config_success(self):
+        """Test restore_application_alert_config with successful response"""
+        # Set up the mock response
+        mock_result = {"id": "alert1", "restored": True}
+        mock_obj = MagicMock()
+        mock_obj.to_dict.return_value = mock_result
+        self.alert_config_api.restore_application_alert_config.return_value = mock_obj
+
+        # Call the method
+        result = asyncio.run(self.client.restore_application_alert_config(id="alert1", created=1234567890))
+
+        # Check that the mock was called with the correct arguments
+        self.alert_config_api.restore_application_alert_config.assert_called_once_with(id="alert1", created=1234567890)
+
+        # Check that the result is correct
+        self.assertEqual(result, mock_result)
+
+    def test_restore_application_alert_config_missing_id(self):
+        """Test restore_application_alert_config with missing ID"""
+        # Call the method without ID
+        result = asyncio.run(self.client.restore_application_alert_config(id=None, created=1234567890))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertEqual(result["error"], "id is required")
+
+    def test_restore_application_alert_config_missing_created(self):
+        """Test restore_application_alert_config with missing created timestamp"""
+        # Call the method without created timestamp
+        result = asyncio.run(self.client.restore_application_alert_config(id="alert1", created=None))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertEqual(result["error"], "created timestamp is required")
+
+    def test_restore_application_alert_config_error(self):
+        """Test restore_application_alert_config error handling"""
+        # Set up the mock to raise an exception
+        self.alert_config_api.restore_application_alert_config.side_effect = Exception("Test error")
+
+        # Call the method
+        result = asyncio.run(self.client.restore_application_alert_config(id="alert1", created=1234567890))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertIn("Failed to restore application alert config", result["error"])
+
+    def test_update_application_alert_config_baseline_success(self):
+        """Test update_application_alert_config_baseline with successful response"""
+        # Set up the mock response
+        mock_result = {"id": "alert1", "baseline_updated": True}
+        mock_obj = MagicMock()
+        mock_obj.to_dict.return_value = mock_result
+        self.alert_config_api.update_application_historic_baseline.return_value = mock_obj
+
+        # Call the method
+        result = asyncio.run(self.client.update_application_alert_config_baseline(id="alert1"))
+
+        # Check that the mock was called with the correct arguments
+        self.alert_config_api.update_application_historic_baseline.assert_called_once_with(id="alert1")
+
+        # Check that the result is correct
+        self.assertEqual(result, mock_result)
+
+    def test_update_application_alert_config_baseline_missing_id(self):
+        """Test update_application_alert_config_baseline with missing ID"""
+        # Call the method without ID
+        result = asyncio.run(self.client.update_application_alert_config_baseline(id=None))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertEqual(result["error"], "id is required")
+
+    def test_update_application_alert_config_baseline_error(self):
+        """Test update_application_alert_config_baseline error handling"""
+        # Set up the mock to raise an exception
+        self.alert_config_api.update_application_historic_baseline.side_effect = Exception("Test error")
+
+        # Call the method
+        result = asyncio.run(self.client.update_application_alert_config_baseline(id="alert1"))
+
+        # Check that the result contains an error message
+        self.assertIn("error", result)
+        self.assertIn("Failed to update application alert config baseline", result["error"])
 
     def test_delete_application_alert_config_success(self):
         """Test delete_application_alert_config with successful response"""

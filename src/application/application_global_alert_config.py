@@ -33,10 +33,228 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
         """Initialize the Application Alert MCP tools client."""
         super().__init__(read_token=read_token, base_url=base_url)
 
-    @register_as_tool(
-        title="Find Active Global Application Alert Configs",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # CRUD Operations Dispatcher - called by smart_router_tool.py
+    async def execute_alert_config_operation(
+        self,
+        operation: str,
+        application_id: Optional[str] = None,
+        id: Optional[str] = None,
+        alert_ids: Optional[List[str]] = None,
+        valid_on: Optional[int] = None,
+        created: Optional[int] = None,
+        payload: Optional[Union[Dict[str, Any], str]] = None,
+        ctx=None
+    ) -> Dict[str, Any]:
+        """
+        Execute Global Application Alert Config CRUD operations.
+        Called by the smart router tool.
+
+        Args:
+            operation: Operation to perform (find_active, find_versions, find, create, update, delete, enable, disable, restore)
+            application_id: Application ID (for find_active)
+            id: Alert config ID
+            alert_ids: List of alert IDs to filter
+            valid_on: Unix timestamp for specific version
+            created: Unix timestamp for restore
+            payload: Configuration payload
+            ctx: MCP context
+
+        Returns:
+            Operation result dictionary
+        """
+        try:
+            if operation == "find_active":
+                return await self._find_active_configs(application_id, alert_ids, ctx)
+            elif operation == "find_versions":
+                return await self._find_config_versions(id, ctx)
+            elif operation == "find":
+                return await self._find_config(id, valid_on, ctx)
+            elif operation == "create":
+                return await self._create_config(payload, ctx)
+            elif operation == "update":
+                return await self._update_config(id, payload, ctx)
+            elif operation == "delete":
+                return await self._delete_config(id, ctx)
+            elif operation == "enable":
+                return await self._enable_config(id, ctx)
+            elif operation == "disable":
+                return await self._disable_config(id, ctx)
+            elif operation == "restore":
+                return await self._restore_config(id, created, ctx)
+            else:
+                return {"error": f"Operation '{operation}' not supported"}
+
+        except Exception as e:
+            logger.error(f"Error executing {operation}: {e}", exc_info=True)
+            return {"error": f"Error executing {operation}: {e!s}"}
+
+    # Individual operation functions
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _find_active_configs(
+        self,
+        application_id: Optional[str],
+        alert_ids: Optional[List[str]],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Find active global application alert configs."""
+        if not application_id:
+            return {"error": "application_id is required for find_active operation"}
+
+        return await self.find_active_global_application_alert_configs(
+            application_id=application_id,
+            alert_ids=alert_ids,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _find_config_versions(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Find all versions of a global application alert config."""
+        if not id:
+            return {"error": "id is required for find_versions operation"}
+
+        return await self.find_global_application_alert_config_versions(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _find_config(
+        self,
+        id: Optional[str],
+        valid_on: Optional[int],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Find a specific global application alert config."""
+        return await self.find_global_application_alert_config(
+            id=id,
+            valid_on=valid_on,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _create_config(
+        self,
+        payload: Optional[Union[Dict[str, Any], str]],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Create a new global application alert config."""
+        if not payload:
+            return {"error": "payload is required for create operation"}
+
+        return await self.create_global_application_alert_config(
+            payload=payload,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _update_config(
+        self,
+        id: Optional[str],
+        payload: Optional[Union[Dict[str, Any], str]],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Update an existing global application alert config."""
+        if not id:
+            return {"error": "id is required for update operation"}
+        if not payload:
+            return {"error": "payload is required for update operation"}
+
+        return await self.update_global_application_alert_config(
+            id=id,
+            payload=payload,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _delete_config(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Delete a global application alert config."""
+        if not id:
+            return {"error": "id is required for delete operation"}
+
+        return await self.delete_global_application_alert_config(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _enable_config(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Enable a global application alert config."""
+        if not id:
+            return {"error": "id is required for enable operation"}
+
+        return await self.enable_global_application_alert_config(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _disable_config(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Disable a global application alert config."""
+        if not id:
+            return {"error": "id is required for disable operation"}
+
+        return await self.disable_global_application_alert_config(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(GlobalApplicationAlertConfigurationApi)
+    async def _restore_config(
+        self,
+        id: Optional[str],
+        created: Optional[int],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Restore a deleted global application alert config."""
+        if not id:
+            return {"error": "id is required for restore operation"}
+        if not created:
+            return {"error": "created timestamp is required for restore operation"}
+
+        return await self.restore_global_application_alert_config(
+            id=id,
+            created=created,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    # Original individual methods - no @register_as_tool decorator
+    # These are called internally by the operation functions above
+
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def find_active_global_application_alert_configs(self,
                                             application_id: str,
@@ -82,9 +300,32 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
                 logger.debug(f"Parsed JSON result: {result}")
 
                 if isinstance(result, list):
-                    return {"configs": result}
+                    configs = result
                 else:
-                    return {"configs": [result] if result else []}
+                    configs = [result] if result else []
+
+                # Limit to first 10 results
+                total_count = len(configs)
+                limited_configs = configs[:10]
+
+                # Provide helpful feedback based on the result
+                if not configs:
+                    return {
+                        "configs": [],
+                        "count": 0,
+                        "total": 0,
+                        "showing": 0,
+                        "message": f"No active global alert configurations found for application ID: {application_id}",
+                        "suggestion": "You can create a new global alert configuration using the 'create' operation."
+                    }
+                else:
+                    return {
+                        "configs": limited_configs,
+                        "count": len(limited_configs),
+                        "total": total_count,
+                        "showing": len(limited_configs),
+                        "message": f"Found {total_count} active global alert configuration(s) for application ID: {application_id}. Showing first {len(limited_configs)}."
+                    }
 
             except json.JSONDecodeError as e:
                 error_msg = f"Failed to parse response JSON: {e}"
@@ -96,10 +337,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             return {"error": f"Failed to get active global application alert config: {e!s}"}
 
 
-    @register_as_tool(
-        title="Find Global Application Alert Config Versions",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def find_global_application_alert_config_versions(self,
                                                      id: str,
@@ -147,10 +385,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in find_global_application_alert_config_versions: {e}", exc_info=True)
             return {"error": f"Failed to get global application alert config versions: {e!s}"}
 
-    @register_as_tool(
-        title="Find Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def find_global_application_alert_config(self,
                                             id: Optional[str] = None,
@@ -196,10 +431,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in find_global_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to get global application alert configs: {e!s}"}
 
-    @register_as_tool(
-        title="Delete Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def delete_global_application_alert_config(self,
                                               id: str,
@@ -240,10 +472,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in delete_global_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to delete global application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Enable Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def enable_global_application_alert_config(self,
                                               id: str,
@@ -288,10 +517,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in enable_global_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to enable global application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Disable Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def disable_global_application_alert_config(self,
                                                id: str,
@@ -336,10 +562,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in disable_global_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to disable global application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Restore Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def restore_global_application_alert_config(self,
                                                id: str,
@@ -389,10 +612,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in restore_global_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to restore global application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Create Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def create_global_application_alert_config(self,
                                               payload: Union[Dict[str, Any], str],
@@ -534,10 +754,7 @@ class ApplicationGlobalAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in create_global_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to create global application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Update Global Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
+    # @register_as_tool decorator removed - now called via router
     @with_header_auth(GlobalApplicationAlertConfigurationApi)
     async def update_global_application_alert_config(self,
                                               id: str,

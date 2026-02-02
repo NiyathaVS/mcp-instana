@@ -65,25 +65,28 @@ from fastmcp import FastMCP
 
 @dataclass
 class MCPState:
-    """State for the MCP server."""
+    """State for the MCP server with all tool categories."""
+    # Router tool
+    smart_router_client: Any = None
+
+    # Infrastructure - Only the new two-pass elicitation tool
+    infra_analyze_new_client: Any = None
+
+    # Events tools
     events_client: Any = None
-    infra_client: Any = None
-    app_resource_client: Any = None
-    app_metrics_client: Any = None
-    app_alert_client: Any = None
-    infra_catalog_client: Any = None
-    infra_topo_client: Any = None
-    infra_analyze_client: Any = None
-    infra_metrics_client: Any = None
-    app_catalog_client: Any = None
-    app_topology_client: Any = None
-    app_analyze_client: Any = None
-    app_settings_client: Any = None
-    app_global_alert_client: Any = None
+
+    # Automation tools
+    action_catalog_client: Any = None
+    action_history_client: Any = None
+
+    # Website tools
     website_metrics_client: Any = None
     website_catalog_client: Any = None
     website_analyze_client: Any = None
     website_configuration_client: Any = None
+
+    # Settings tools
+    custom_dashboard_client: Any = None
 
 # Global variables to store credentials for lifespan
 _global_token = None
@@ -236,33 +239,12 @@ async def execute_tool(tool_name: str, arguments: dict, clients_state) -> str:
 def get_client_categories():
     """Get client categories with lazy imports to avoid circular dependencies"""
     try:
-        from src.application.application_alert_config import ApplicationAlertMCPTools
-        from src.application.application_analyze import ApplicationAnalyzeMCPTools
-        from src.application.application_catalog import ApplicationCatalogMCPTools
-        from src.application.application_global_alert_config import (
-            ApplicationGlobalAlertMCPTools,
-        )
-        from src.application.application_metrics import ApplicationMetricsMCPTools
-        from src.application.application_resources import ApplicationResourcesMCPTools
-        from src.application.application_settings import ApplicationSettingsMCPTools
-        from src.application.application_topology import ApplicationTopologyMCPTools
         from src.automation.action_catalog import ActionCatalogMCPTools
         from src.automation.action_history import ActionHistoryMCPTools
+        from src.core.smart_router_tool import SmartRouterMCPTool
         from src.event.events_tools import AgentMonitoringEventsMCPTools
-        from src.infrastructure.infrastructure_analyze import (
-            InfrastructureAnalyzeMCPTools,
-        )
-        from src.infrastructure.infrastructure_catalog import (
-            InfrastructureCatalogMCPTools,
-        )
-        from src.infrastructure.infrastructure_metrics import (
-            InfrastructureMetricsMCPTools,
-        )
-        from src.infrastructure.infrastructure_resources import (
-            InfrastructureResourcesMCPTools,
-        )
-        from src.infrastructure.infrastructure_topology import (
-            InfrastructureTopologyMCPTools,
+        from src.infrastructure.infrastructure_analyze_new import (
+            InfrastructureAnalyzeOption2,
         )
         from src.settings.custom_dashboard_tools import CustomDashboardMCPTools
         from src.website.website_analyze import WebsiteAnalyzeMCPTools
@@ -274,22 +256,11 @@ def get_client_categories():
         return {}
 
     return {
-        "infra": [
-            ('infra_client', InfrastructureResourcesMCPTools),
-            ('infra_catalog_client', InfrastructureCatalogMCPTools),
-            ('infra_topo_client', InfrastructureTopologyMCPTools),
-            ('infra_analyze_client', InfrastructureAnalyzeMCPTools),
-            ('infra_metrics_client', InfrastructureMetricsMCPTools),
+        "router": [
+            ('smart_router_client', SmartRouterMCPTool),
         ],
-        "app": [
-            ('app_resource_client', ApplicationResourcesMCPTools),
-            ('app_metrics_client', ApplicationMetricsMCPTools),
-            ('app_alert_client', ApplicationAlertMCPTools),
-            ('app_catalog_client', ApplicationCatalogMCPTools),
-            ('app_topology_client', ApplicationTopologyMCPTools),
-            ('app_analyze_client', ApplicationAnalyzeMCPTools),
-            ('app_settings_client', ApplicationSettingsMCPTools),
-            ('app_global_alert_client', ApplicationGlobalAlertMCPTools),
+        "infra": [
+            ('infra_analyze_new_client', InfrastructureAnalyzeOption2),
         ],
         "events": [
             ('events_client', AgentMonitoringEventsMCPTools),
@@ -312,79 +283,70 @@ def get_client_categories():
 def get_prompt_categories():
     """Get prompt categories organized by functionality"""
     # Import the class-based prompts
-    from src.prompts.application.application_alerts import ApplicationAlertsPrompts
-    from src.prompts.application.application_catalog import ApplicationCatalogPrompts
-    from src.prompts.application.application_metrics import ApplicationMetricsPrompts
-    from src.prompts.application.application_resources import (
-        ApplicationResourcesPrompts,
-    )
-    from src.prompts.application.application_settings import ApplicationSettingsPrompts
-    from src.prompts.application.application_topology import ApplicationTopologyPrompts
-    from src.prompts.infrastructure.infrastructure_analyze import (
-        InfrastructureAnalyzePrompts,
-    )
-    from src.prompts.infrastructure.infrastructure_catalog import (
-        InfrastructureCatalogPrompts,
-    )
-    from src.prompts.infrastructure.infrastructure_metrics import (
-        InfrastructureMetricsPrompts,
-    )
-    from src.prompts.infrastructure.infrastructure_resources import (
-        InfrastructureResourcesPrompts,
-    )
-    from src.prompts.infrastructure.infrastructure_topology import (
-        InfrastructureTopologyPrompts,
-    )
-    from src.prompts.settings.custom_dashboard import CustomDashboardPrompts
-    from src.prompts.website.website_analyze import WebsiteAnalyzePrompts
-    from src.prompts.website.website_catalog import WebsiteCatalogPrompts
-    from src.prompts.website.website_configuration import WebsiteConfigurationPrompts
-    from src.prompts.website.website_metrics import WebsiteMetricsPrompts
+    try:
+        from src.prompts.application.application_alerts import ApplicationAlertsPrompts
+        from src.prompts.application.application_catalog import (
+            ApplicationCatalogPrompts,
+        )
+        from src.prompts.application.application_metrics import (
+            ApplicationMetricsPrompts,
+        )
+        from src.prompts.application.application_resources import (
+            ApplicationResourcesPrompts,
+        )
+        from src.prompts.application.application_settings import (
+            ApplicationSettingsPrompts,
+        )
+        from src.prompts.application.application_topology import (
+            ApplicationTopologyPrompts,
+        )
+        from src.prompts.events.events_tools import EventsPrompts
+        from src.prompts.settings.custom_dashboard import CustomDashboardPrompts
+        from src.prompts.website.website_analyze import WebsiteAnalyzePrompts
+        from src.prompts.website.website_catalog import WebsiteCatalogPrompts
+        from src.prompts.website.website_configuration import (
+            WebsiteConfigurationPrompts,
+        )
+        from src.prompts.website.website_metrics import WebsiteMetricsPrompts
+    except ImportError as e:
+        logger.warning(f"Could not import prompt classes: {e}")
+        return {}
 
-    # Use the get_prompts method to get all prompts from the classes
-    infra_analyze_prompts = InfrastructureAnalyzePrompts.get_prompts()
-    infra_metrics_prompts = InfrastructureMetricsPrompts.get_prompts()
-    infra_catalog_prompts = InfrastructureCatalogPrompts.get_prompts()
-    infra_topology_prompts = InfrastructureTopologyPrompts.get_prompts()
-    infra_resources_prompts = InfrastructureResourcesPrompts.get_prompts()
-    app_resources_prompts = ApplicationResourcesPrompts.get_prompts()
-    app_metrics_prompts = ApplicationMetricsPrompts.get_prompts()
+    # Get prompts from each class
+    app_alerts_prompts = ApplicationAlertsPrompts.get_prompts()
     app_catalog_prompts = ApplicationCatalogPrompts.get_prompts()
+    app_metrics_prompts = ApplicationMetricsPrompts.get_prompts()
+    app_resources_prompts = ApplicationResourcesPrompts.get_prompts()
     app_settings_prompts = ApplicationSettingsPrompts.get_prompts()
     app_topology_prompts = ApplicationTopologyPrompts.get_prompts()
-    app_alert_prompts = ApplicationAlertsPrompts.get_prompts()
-    website_metrics_prompts = WebsiteMetricsPrompts.get_prompts()
-    website_catalog_prompts = WebsiteCatalogPrompts.get_prompts()
-    website_analyze_prompts = WebsiteAnalyzePrompts.get_prompts()
-    website_configuration_prompts = WebsiteConfigurationPrompts.get_prompts()
+    events_prompts = EventsPrompts.get_prompts()
     custom_dashboard_prompts = CustomDashboardPrompts.get_prompts()
+    website_analyze_prompts = WebsiteAnalyzePrompts.get_prompts()
+    website_catalog_prompts = WebsiteCatalogPrompts.get_prompts()
+    website_configuration_prompts = WebsiteConfigurationPrompts.get_prompts()
+    website_metrics_prompts = WebsiteMetricsPrompts.get_prompts()
 
-    # Return the categories with their prompt groups
     return {
-        "infra": [
-            ('infra_resources_prompts', infra_resources_prompts),
-            ('infra_catalog_prompts', infra_catalog_prompts),
-            ('infra_topology_prompts', infra_topology_prompts),
-            ('infra_analyze_prompts', infra_analyze_prompts),
-            ('infra_metrics_prompts', infra_metrics_prompts),
-        ],
         "app": [
-            ('app_resources_prompts', app_resources_prompts),
-            ('app_metrics_prompts', app_metrics_prompts),
-            ('app_catalog_prompts', app_catalog_prompts),
-            ('app_settings_prompts', app_settings_prompts),
-            ('app_topology_prompts', app_topology_prompts),
-            ('app_alert_prompts', app_alert_prompts),
+            ("Application Alerts", app_alerts_prompts),
+            ("Application Catalog", app_catalog_prompts),
+            ("Application Metrics", app_metrics_prompts),
+            ("Application Resources", app_resources_prompts),
+            ("Application Settings", app_settings_prompts),
+            ("Application Topology", app_topology_prompts),
+        ],
+        "events": [
+            ("Events Tools", events_prompts),
         ],
         "website": [
-            ('website_metrics_prompts', website_metrics_prompts),
-            ('website_catalog_prompts', website_catalog_prompts),
-            ('website_analyze_prompts', website_analyze_prompts),
-            ('website_configuration_prompts', website_configuration_prompts),
+            ("Website Analyze", website_analyze_prompts),
+            ("Website Catalog", website_catalog_prompts),
+            ("Website Configuration", website_configuration_prompts),
+            ("Website Metrics", website_metrics_prompts),
         ],
         "settings": [
-            ('custom_dashboard_prompts', custom_dashboard_prompts),
-        ],
+            ("Custom Dashboard", custom_dashboard_prompts),
+        ]
     }
 
 def get_enabled_client_configs(enabled_categories: str):
@@ -441,7 +403,7 @@ def main():
             "--tools",
             type=str,
             metavar='<categories>',
-            help="Comma-separated list of tool categories to enable (--tools infra,app,events,automation,website, settings). Also controls which prompts are enabled. If not provided, all tools and prompts are enabled."
+            help="Comma-separated list of tool categories to enable (--tools router,infra,app,events,automation,website,settings). Also controls which prompts are enabled. If not provided, all tools and prompts are enabled. Use 'router' for smart routing across app and infra metrics."
         )
         parser.add_argument(
             "--list-tools",
@@ -453,6 +415,16 @@ def main():
             type=int,
             default=int(os.getenv("PORT", "8080")),
             help="Port to listen on (default: 8080, can be overridden with PORT env var)"
+        )
+        parser.add_argument(
+            "--api-token",
+            type=str,
+            help="Instana API token (overrides INSTANA_API_TOKEN env var)"
+        )
+        parser.add_argument(
+            "--base-url",
+            type=str,
+            help="Instana base URL (overrides INSTANA_BASE_URL env var)"
         )
         # Check for help arguments before parsing
         if len(sys.argv) > 1 and any(arg in ['-h','--h','--help','-help'] for arg in sys.argv[1:]):
@@ -488,7 +460,7 @@ def main():
         else:
             set_log_level(args.log_level)
 
-        all_categories = {"infra", "app", "events", "automation", "website", "settings"}
+        all_categories = {"router", "infra", "app", "events", "automation", "website", "settings"}
 
         # Handle --list-tools option
         if args.list_tools:
@@ -516,7 +488,7 @@ def main():
                 enabled = set(all_categories)
 
         if invalid:
-            logger.error(f"Error: Unknown category/categories: {', '.join(invalid)}. Available categories: infra, app, events, automation, website, settings")
+            logger.error(f"Error: Unknown category/categories: {', '.join(invalid)}. Available categories: router, infra, app, events, automation, website, settings")
             sys.exit(2)
 
         # Print enabled tools for user information
@@ -539,8 +511,9 @@ def main():
                 f"Total enabled tools: {len(enabled_tool_classes)}"
             )
 
-        # Get credentials from environment variables for stdio mode
-        INSTANA_API_TOKEN, INSTANA_BASE_URL = get_instana_credentials()
+        # Get credentials from command line args or environment variables
+        INSTANA_API_TOKEN = args.api_token if args.api_token else os.getenv("INSTANA_API_TOKEN", "")
+        INSTANA_BASE_URL = args.base_url if args.base_url else os.getenv("INSTANA_BASE_URL", "")
 
         if args.transport == "stdio" or args.transport is None:
             if not validate_credentials(INSTANA_API_TOKEN, INSTANA_BASE_URL):

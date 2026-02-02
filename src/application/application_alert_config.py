@@ -33,73 +33,341 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
         """Initialize the Application Alert MCP tools client."""
         super().__init__(read_token=read_token, base_url=base_url)
 
-    @register_as_tool(
-        title="Find Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
-    @with_header_auth(ApplicationAlertConfigurationApi)
-    async def find_application_alert_config(self,
-                                            id: str,
-                                            valid_on: Optional[int] = None,
-                                            ctx=None, api_client=None) -> Dict[str, Any]:
+    # CRUD Operations Dispatcher - called by smart_router_tool.py
+    async def execute_alert_config_operation(
+        self,
+        operation: str,
+        application_id: Optional[str] = None,
+        id: Optional[str] = None,
+        alert_ids: Optional[List[str]] = None,
+        valid_on: Optional[int] = None,
+        created: Optional[int] = None,
+        payload: Optional[Union[Dict[str, Any], str]] = None,
+        ctx=None
+    ) -> Dict[str, Any]:
         """
-        Get a specific Smart Alert Configuration.
-
-        This tool retrieves a specific Smart Alert Configuration by its ID.
-        This may return a deleted Configuration.
+        Execute Application Alert Config CRUD operations.
+        Called by the smart router tool.
 
         Args:
-            id: The ID of the Smart Alert Configuration
-            valid_on: Optional timestamp (in milliseconds) to retrieve the configuration as it was at that time
+            operation: Operation to perform (find_active, find_versions, find, create, update, delete, enable, disable, restore, update_baseline)
+            application_id: Application ID (for find_active)
+            id: Alert config ID
+            alert_ids: List of alert IDs to filter
+            valid_on: Unix timestamp for specific version
+            created: Unix timestamp for restore
+            payload: Configuration payload
+            ctx: MCP context
+
+        Returns:
+            Operation result dictionary
+        """
+        try:
+            if operation == "find_active":
+                return await self._find_active_configs(application_id, alert_ids, ctx)
+            elif operation == "find_versions":
+                return await self._find_config_versions(id, ctx)
+            elif operation == "find":
+                return await self._find_config(id, valid_on, ctx)
+            elif operation == "create":
+                return await self._create_config(payload, ctx)
+            elif operation == "update":
+                return await self._update_config(id, payload, ctx)
+            elif operation == "delete":
+                return await self._delete_config(id, ctx)
+            elif operation == "enable":
+                return await self._enable_config(id, ctx)
+            elif operation == "disable":
+                return await self._disable_config(id, ctx)
+            elif operation == "restore":
+                return await self._restore_config(id, created, ctx)
+            elif operation == "update_baseline":
+                return await self._update_baseline(id, ctx)
+            else:
+                return {"error": f"Operation '{operation}' not supported"}
+
+        except Exception as e:
+            logger.error(f"Error executing {operation}: {e}", exc_info=True)
+            return {"error": f"Error executing {operation}: {e!s}"}
+
+    # Individual operation functions
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _find_active_configs(
+        self,
+        application_id: Optional[str],
+        alert_ids: Optional[List[str]],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Find active application alert configs."""
+        if not application_id:
+            return {"error": "application_id is required for find_active operation"}
+
+        return await self.find_active_application_alert_configs(
+            application_id=application_id,
+            alert_ids=alert_ids,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _find_config_versions(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Find all versions of an application alert config."""
+        if not id:
+            return {"error": "id is required for find_versions operation"}
+
+        return await self.find_application_alert_config_versions(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _find_config(
+        self,
+        id: Optional[str],
+        valid_on: Optional[int],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Find a specific application alert config."""
+        return await self.find_application_alert_config(
+            id=id,
+            valid_on=valid_on,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _create_config(
+        self,
+        payload: Optional[Union[Dict[str, Any], str]],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Create a new application alert config."""
+        if not payload:
+            return {"error": "payload is required for create operation"}
+
+        return await self.create_application_alert_config(
+            payload=payload,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _update_config(
+        self,
+        id: Optional[str],
+        payload: Optional[Union[Dict[str, Any], str]],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Update an existing application alert config."""
+        if not id:
+            return {"error": "id is required for update operation"}
+        if not payload:
+            return {"error": "payload is required for update operation"}
+
+        return await self.update_application_alert_config(
+            id=id,
+            payload=payload,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _delete_config(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Delete an application alert config."""
+        if not id:
+            return {"error": "id is required for delete operation"}
+
+        return await self.delete_application_alert_config(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _enable_config(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Enable an application alert config."""
+        if not id:
+            return {"error": "id is required for enable operation"}
+
+        return await self.enable_application_alert_config(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _disable_config(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Disable an application alert config."""
+        if not id:
+            return {"error": "id is required for disable operation"}
+
+        return await self.disable_application_alert_config(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _restore_config(
+        self,
+        id: Optional[str],
+        created: Optional[int],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Restore a deleted application alert config."""
+        if not id:
+            return {"error": "id is required for restore operation"}
+        if not created:
+            return {"error": "created timestamp is required for restore operation"}
+
+        return await self.restore_application_alert_config(
+            id=id,
+            created=created,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def _update_baseline(
+        self,
+        id: Optional[str],
+        ctx=None,
+        api_client=None
+    ) -> Dict[str, Any]:
+        """Update baseline for an application alert config."""
+        if not id:
+            return {"error": "id is required for update_baseline operation"}
+
+        return await self.update_application_alert_config_baseline(
+            id=id,
+            ctx=ctx,
+            api_client=api_client
+        )
+
+    # Original individual methods - no @register_as_tool decorator
+    # These are called internally by the operation functions above
+
+    @with_header_auth(ApplicationAlertConfigurationApi)
+    async def find_active_application_alert_configs(self,
+                                            application_id: str,
+                                            alert_ids: Optional[List[str]] = None,
+                                            ctx=None, api_client=None) -> Dict[str, Any]:
+        """
+        Get All Smart Alert Configuration.
+
+        This tool retrieves all Smart Alert Configuration, filtered by application ID and alert IDs.
+        This may return a deleted Configuration.
+
+        Configurations are sorted by creation date in descending order.
+
+        Args:
+            application_id: The ID of a specific application.
+            alert_ids: A list of Smart Alert Configuration IDs. This allows fetching of a specific set of Configurations. This query can be repeated to use multiple IDs.
             ctx: The MCP context (optional)
 
         Returns:
             Dictionary containing the Smart Alert Configuration or error information
         """
         try:
-            logger.debug(f"find_application_alert_config called with id={id}, valid_on={valid_on}")
+            logger.debug(f"find_active_application_alert_configs called with application_id={application_id}, alert_ids={alert_ids}")
 
             # Validate required parameters
-            if not id:
-                return {"error": "id is required"}
+            if not application_id:
+                return {"error": "application_id is required"}
 
-            # Call the find_application_alert_config method from the SDK
-            logger.debug(f"Calling find_application_alert_config with id={id}, valid_on={valid_on}")
-            result = api_client.find_application_alert_config(
-                id=id,
-                valid_on=valid_on
+            # Call the find_active_application_alert_configs method from the SDK
+            logger.debug(f"Calling find_active_application_alert_configs with application_id={application_id}, alert_ids={alert_ids}")
+            response = api_client.find_active_application_alert_configs_without_preload_content(
+                application_id=application_id,
+                alert_ids=alert_ids
             )
 
-            # Convert the result to a dictionary
-            if hasattr(result, 'to_dict'):
-                result_dict = result.to_dict()
-            else:
-                # If it's already a dict or another format, use it as is
-                result_dict = result
+            import json
 
-            logger.debug(f"Result from find_application_alert_config: {result_dict}")
-            return result_dict
+            raw_data = response.data.decode('utf-8')
+            logger.debug(f"Raw data: {raw_data}")
+
+            try:
+                result = json.loads(raw_data)
+                logger.debug(f"Parsed JSON result: {result}")
+
+                if isinstance(result, list):
+                    configs = result
+                else:
+                    configs = [result] if result else []
+
+                # Limit to first 10 results
+                total_count = len(configs)
+                limited_configs = configs[:10]
+
+                # Provide helpful feedback based on the result
+                if not configs:
+                    return {
+                        "configs": [],
+                        "count": 0,
+                        "total": 0,
+                        "showing": 0,
+                        "message": f"No active alert configurations found for application ID: {application_id}",
+                        "suggestion": "You can create a new alert configuration using the 'create' operation."
+                    }
+                else:
+                    return {
+                        "configs": limited_configs,
+                        "count": len(limited_configs),
+                        "total": total_count,
+                        "showing": len(limited_configs),
+                        "message": f"Found {total_count} active alert configuration(s) for application ID: {application_id}. Showing first {len(limited_configs)}."
+                    }
+
+            except json.JSONDecodeError as e:
+                error_msg = f"Failed to parse response JSON: {e}"
+                logger.error(error_msg)
+                return {"error": error_msg}
+
         except Exception as e:
-            logger.error(f"Error in find_application_alert_config: {e}", exc_info=True)
-            return {"error": f"Failed to get application alert config: {e!s}"}
+            logger.error(f"Error in find_active_application_alert_configs: {e}", exc_info=True)
+            return {"error": f"Failed to get active application alert config: {e!s}"}
 
 
-    @register_as_tool(
-        title="Find Application Alert Config Versions",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def find_application_alert_config_versions(self,
                                                      id: str,
                                                      ctx=None, api_client=None) -> Dict[str, Any]:
         """
-        Get Smart Alert Config Versions . Get all versions of a Smart Alert Configuration.
+        Get Smart Alert Config Versions. Get all versions of Smart Alert Configuration.
 
-        This tool retrieves all versions of a Smart Alert Configuration by its ID.
+        This tool retrieves all versions of a Smart Alert Configuration.
         This may return deleted Configurations. Configurations are sorted by creation date in descending order.
 
         Args:
-            id: The ID of the Smart Alert Configuration
+            id: ID of a specific Smart Alert Configuration to retrieve.
             ctx: The MCP context (optional)
 
         Returns:
@@ -135,37 +403,32 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in find_application_alert_config_versions: {e}", exc_info=True)
             return {"error": f"Failed to get application alert config versions: {e!s}"}
 
-    @register_as_tool(
-        title="Get Application Alert Configs",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
-    async def get_application_alert_configs(self,
-                                            application_id: Optional[str] = None,
-                                            alert_ids: Optional[List[str]] = None,
+    async def find_application_alert_config(self,
+                                            id: Optional[str] = None,
+                                            valid_on: Optional[int] = None,
                                             ctx=None, api_client=None) -> Dict[str, Any]:
         """
-        Get Smart Alert Configurations for a specific application.
+        Gets a specific Smart Alert Configuration. This may return a deleted Configuration.
 
-        This tool retrieves Smart Alert Configurations, optionally filtered by application ID and alert IDs.
-        Configurations are sorted by creation date in descending order.
+        This tool retrieves Smart Alert Configurations, filtered by id and valid on.
 
         Args:
-            application_id: Optional ID of the application to filter configurations
-            alert_ids: Optional list of alert IDs to filter configurations
+            id: ID of a specific Smart Alert Configuration to retrieve
+            valid_on: A Unix timestamp representing a specific time the Configuration was active. If no timestamp is provided, the latest active version will be retrieved.
             ctx: The MCP context (optional)
 
         Returns:
             Dictionary containing Smart Alert Configurations or error information
         """
         try:
-            logger.debug(f"get_application_alert_configs called with application_id={application_id}, alert_ids={alert_ids}")
+            logger.debug(f"find_application_alert_config called with id={id}, valid_on={valid_on}")
 
-            # Call the find_active_application_alert_configs method from the SDK
-            logger.debug(f"Calling find_active_application_alert_configs with application_id={application_id}, alert_ids={alert_ids}")
-            result = api_client.find_active_application_alert_configs(
-                application_id=application_id,
-                alert_ids=alert_ids
+            # Call the find_application_alert_config method from the SDK
+            logger.debug(f"Calling find_application_alert_config with id={id}, valid_on={valid_on}")
+            result = api_client.find_application_alert_config(
+                id=id,
+                valid_on=valid_on
             )
 
             # Convert the result to a dictionary
@@ -179,28 +442,24 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
                 # If it's already a dict or another format, use it as is
                 result_dict = result if isinstance(result, dict) else {"data": result}
 
-            logger.debug(f"Result from find_active_application_alert_configs: {result_dict}")
+            logger.debug(f"Result from find_application_alert_config: {result_dict}")
             return result_dict
         except Exception as e:
-            logger.error(f"Error in get_application_alert_configs: {e}", exc_info=True)
+            logger.error(f"Error in find_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to get application alert configs: {e!s}"}
 
-    @register_as_tool(
-        title="Delete Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def delete_application_alert_config(self,
                                               id: str,
                                               ctx=None, api_client=None) -> Dict[str, Any]:
         """
-        Delete a Smart Alert Configuration.
+        Deletes a Smart Alert Configuration.
 
         This tool deletes a specific Smart Alert Configuration by its ID.
         Once deleted, the configuration will no longer trigger alerts.
 
         Args:
-            id: The ID of the Smart Alert Configuration to delete
+            id: ID of a specific Smart Alert Configuration to delete.
             ctx: The MCP context (optional)
 
         Returns:
@@ -229,10 +488,6 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in delete_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to delete application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Enable Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def enable_application_alert_config(self,
                                               id: str,
@@ -244,7 +499,7 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
         Once enabled, the configuration will start triggering alerts when conditions are met.
 
         Args:
-            id: The ID of the Smart Alert Configuration to enable
+            id: ID of a specific Smart Alert Configuration to enable.
             ctx: The MCP context (optional)
 
         Returns:
@@ -277,10 +532,6 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in enable_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to enable application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Disable Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def disable_application_alert_config(self,
                                                id: str,
@@ -292,7 +543,7 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
         Once disabled, the configuration will stop triggering alerts even when conditions are met.
 
         Args:
-            id: The ID of the Smart Alert Configuration to disable
+            id: ID of a specific Smart Alert Configuration to disable.
             ctx: The MCP context (optional)
 
         Returns:
@@ -325,10 +576,6 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in disable_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to disable application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Restore Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def restore_application_alert_config(self,
                                                id: str,
@@ -341,7 +588,7 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
         Once restored, the configuration will be active again and can trigger alerts when conditions are met.
 
         Args:
-            id: The ID of the Smart Alert Configuration to restore
+            id: ID of a specific Smart Alert Configuration to restore.
             created: Unix timestamp representing the creation time of the specific Smart Alert Configuration version
             ctx: The MCP context (optional)
 
@@ -378,10 +625,6 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in restore_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to restore application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Update Application Alert Config Baseline",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def update_application_alert_config_baseline(self,
                                                        id: str,
@@ -393,7 +636,7 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
         The 'LastUpdated' field of the Configuration is changed to the current time.
 
         Args:
-            id: The ID of the Smart Alert Configuration to recalculate
+            id: ID of a specific Smart Alert Configuration to recalculate.
             ctx: The MCP context (optional)
 
         Returns:
@@ -426,43 +669,51 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in update_application_alert_config_baseline: {e}", exc_info=True)
             return {"error": f"Failed to update application alert config baseline: {e!s}"}
 
-    @register_as_tool(
-        title="Create Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def create_application_alert_config(self,
                                               payload: Union[Dict[str, Any], str],
                                               ctx=None, api_client=None) -> Dict[str, Any]:
         """
-        Create a new Smart Alert Configuration.
+        Creates a new Smart Alert Configuration.
 
         This tool creates a new Smart Alert Configuration with the provided configuration details.
         Once created, the configuration will be active and can trigger alerts when conditions are met.
 
         Sample payload:
         {
-            "name": "My Alert Config",
-            "description": "Alert for high CPU usage",
-            "severity": 10,
-            "triggering": true,
-            "enabled": true,
-            "rule": {
-                "alertType": "...",
-                "metricName": "...",
-                "aggregation": "...",
-                "conditionOperator": "...",
-                "conditionValue": 90
-            },
-            "applicationId": "your-application-id",
-            "boundaryScope": "...",
-            "tagFilterExpression": {
-                "type": "EXPRESSION",
-                "logicalOperator": "AND",
-                "elements": []
-            },
-            "granularity": 60000,
-            "timeThreshold": 300000
+        "name": "Slow calls than usual",
+        "description": "Calls are slower or equal to 2 ms based on latency (90th).",
+        "boundaryScope": "INBOUND",
+        "applicationId": "j02SxMRTSf-NCBXf5IdsjQ",
+        "services": {},
+        "severity": 5,
+        "triggering": false,
+        "tagFilterExpression": {
+            "type": "EXPRESSION",
+            "logicalOperator": "AND",
+            "elements": []
+        },
+        "includeInternal": false,
+        "includeSynthetic": false,
+        "rule": {
+            "alertType": "slowness",
+            "aggregation": "P90",
+            "metricName": "latency"
+        },
+        "threshold": {
+            "type": "staticThreshold",
+            "operator": ">=",
+            "value": 2,
+            "lastUpdated": 0
+        },
+        "alertChannelIds": [],
+        "granularity": 600000,
+        "timeThreshold": {
+            "type": "violationsInSequence",
+            "timeWindow": 600000
+        },
+        "evaluationType": "PER_AP",
+        "customPayloadFields": []
         }
 
         Args:
@@ -470,7 +721,7 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             ctx: The MCP context (optional)
 
         Returns:
-            Dictionary containing the created Smart Alert Configuration or error information
+            Dictionary containing the created new Smart Alert Configuration or error information
         """
         try:
             logger.debug(f"create_application_alert_config called with payload={payload}")
@@ -525,16 +776,11 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
                 logger.debug(f"Error importing ApplicationAlertConfig: {e}")
                 return {"error": f"Failed to import ApplicationAlertConfig: {e!s}"}
 
-            # Create an ApplicationAlertConfig object from the request body using from_dict
-            # This properly handles nested objects and discriminators
+            # Create an ApplicationAlertConfig object from the request body
             try:
                 logger.debug(f"Creating ApplicationAlertConfig with params: {request_body}")
-                config_object = ApplicationAlertConfig.from_dict(request_body)
+                config_object = ApplicationAlertConfig(**request_body)
                 logger.debug("Successfully created config object")
-
-                # Debug: Log what will be sent to API
-                config_dict = config_object.to_dict()
-                logger.debug(f"Config object as dict (what will be sent to API): {config_dict}")
             except Exception as e:
                 logger.debug(f"Error creating ApplicationAlertConfig: {e}")
                 return {"error": f"Failed to create config object: {e!s}"}
@@ -556,10 +802,6 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
             logger.error(f"Error in create_application_alert_config: {e}", exc_info=True)
             return {"error": f"Failed to create application alert config: {e!s}"}
 
-    @register_as_tool(
-        title="Update Application Alert Config",
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False)
-    )
     @with_header_auth(ApplicationAlertConfigurationApi)
     async def update_application_alert_config(self,
                                               id: str,
@@ -573,27 +815,39 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
 
         Sample payload:
         {
-            "name": "Updated Alert Config",
-            "description": "Updated alert for high CPU usage",
-            "severity": 5,
-            "triggering": true,
-            "enabled": true,
-            "rule": {
-                "alertType": "...",
-                "metricName": "...",
-                "aggregation": "...",
-                "conditionOperator": "...",
-                "conditionValue": 95
-            },
-            "applicationId": "your-application-id",
-            "boundaryScope": "...",
-            "tagFilterExpression": {
-                "type": "EXPRESSION",
-                "logicalOperator": "AND",
-                "elements": []
-            },
-            "granularity": 60000,
-            "timeThreshold": 300000
+        "name": "Slow calls than usual",
+        "description": "Calls are slower or equal to 2 ms based on latency (90th).",
+        "boundaryScope": "INBOUND",
+        "applicationId": "j02SxMRTSf-NCBXf5IdsjQ",
+        "services": {},
+        "severity": 5,
+        "triggering": false,
+        "tagFilterExpression": {
+            "type": "EXPRESSION",
+            "logicalOperator": "AND",
+            "elements": []
+        },
+        "includeInternal": false,
+        "includeSynthetic": false,
+        "rule": {
+            "alertType": "slowness",
+            "aggregation": "P90",
+            "metricName": "latency"
+        },
+        "threshold": {
+            "type": "staticThreshold",
+            "operator": ">=",
+            "value": 2,
+            "lastUpdated": 0
+        },
+        "alertChannelIds": [],
+        "granularity": 600000,
+        "timeThreshold": {
+            "type": "violationsInSequence",
+            "timeWindow": 600000
+        },
+        "evaluationType": "PER_AP",
+        "customPayloadFields": []
         }
 
         Args:
@@ -660,11 +914,10 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
                 logger.debug(f"Error importing ApplicationAlertConfig: {e}")
                 return {"error": f"Failed to import ApplicationAlertConfig: {e!s}"}
 
-            # Create an ApplicationAlertConfig object from the request body using from_dict
-            # This properly handles nested objects and discriminators
+            # Create an ApplicationAlertConfig object from the request body
             try:
                 logger.debug(f"Creating ApplicationAlertConfig with params: {request_body}")
-                config_object = ApplicationAlertConfig.from_dict(request_body)
+                config_object = ApplicationAlertConfig(**request_body)
                 logger.debug("Successfully created config object")
             except Exception as e:
                 logger.debug(f"Error creating ApplicationAlertConfig: {e}")
@@ -692,6 +945,4 @@ class ApplicationAlertMCPTools(BaseInstanaClient):
         except Exception as e:
             logger.error(f"Error in update_application_alert_config: {e}")
             return {"error": f"Failed to update application alert config: {e!s}"}
-
-
 
