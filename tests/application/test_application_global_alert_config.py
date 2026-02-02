@@ -141,6 +141,56 @@ class TestApplicationGlobalAlertMCPTools(unittest.TestCase):
         self.assertIsInstance(result, dict)
         self.assertIn("configs", result)
         self.assertEqual(result["configs"], mock_data)
+        self.assertIn("count", result)
+        self.assertIn("total", result)
+        self.assertIn("showing", result)
+        self.assertIn("message", result)
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["total"], 1)
+
+    def test_find_active_global_application_alert_configs_empty_result(self):
+        """Test find_active_global_application_alert_configs with empty result"""
+        # Set up the mock response with empty array
+        import json
+        mock_data = []
+        mock_response = MagicMock()
+        mock_response.data = json.dumps(mock_data).encode('utf-8')
+        self.alert_config_api.find_active_global_application_alert_configs_without_preload_content = MagicMock()
+        self.alert_config_api.find_active_global_application_alert_configs_without_preload_content.return_value = mock_response
+
+        # Call the method
+        result = asyncio.run(self.client.find_active_global_application_alert_configs(application_id="app1"))
+
+        # Check that the result is correct
+        self.assertIsInstance(result, dict)
+        self.assertIn("configs", result)
+        self.assertEqual(result["configs"], [])
+        self.assertEqual(result["count"], 0)
+        self.assertEqual(result["total"], 0)
+        self.assertIn("message", result)
+        self.assertIn("No active global alert configurations found", result["message"])
+
+    def test_find_active_global_application_alert_configs_limit_to_10(self):
+        """Test find_active_global_application_alert_configs limits results to 10"""
+        # Set up the mock response with 15 alerts
+        import json
+        mock_data = [{"id": f"alert{i}", "name": f"Test Alert {i}"} for i in range(15)]
+        mock_response = MagicMock()
+        mock_response.data = json.dumps(mock_data).encode('utf-8')
+        self.alert_config_api.find_active_global_application_alert_configs_without_preload_content = MagicMock()
+        self.alert_config_api.find_active_global_application_alert_configs_without_preload_content.return_value = mock_response
+
+        # Call the method
+        result = asyncio.run(self.client.find_active_global_application_alert_configs(application_id="app1"))
+
+        # Check that only 10 results are returned
+        self.assertIsInstance(result, dict)
+        self.assertIn("configs", result)
+        self.assertEqual(len(result["configs"]), 10)
+        self.assertEqual(result["count"], 10)
+        self.assertEqual(result["total"], 15)
+        self.assertEqual(result["showing"], 10)
+        self.assertIn("Showing first 10", result["message"])
 
     def test_find_active_global_application_alert_configs_missing_app_id(self):
         """Test find_active_global_application_alert_configs with missing application ID"""

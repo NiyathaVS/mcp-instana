@@ -629,112 +629,35 @@ Here is an example of a GitHub Copilot response:
 
 ## Supported Features
 
-- [ ] **Application**
-  - [x] **Application Analyze**
-    - [x] Get Call Details
-    - [x] Get Trace Details
-    - [x] Get All Traces
-    - [x] Get Grouped Trace Metrics
-    - [x] Get Grouped Calls Metrics
-    - [x] Get Correlated Traces
-  - [x] **Application Metrics**
-    - [x] Get Application Data Metrics V2
-    - [x] Get Application Metrics
-    - [x] Get Endpoints Metrics
-    - [x] Get Services Metrics
-  - [x] **Application Resources**
-    - [x] Get Applications Endpoints
-    - [x] Get Applications
-    - [x] Get Services
-    - [x] Get Application Services
-  - [x] **Application Catalog**
-    - [x] Get Application Tag Catalog
-    - [x] Get Application Metric Catalog
-  - [ ] **Application Topology**
-    - [ ] Get Application Topology (Service Map)
-  - [x] **Application Settings**
-    - [x] Get All Applications Configs
-    - [x] Add Application Config
-    - [x] Delete Application Config
-    - [x] Get Application Config
-    - [x] Update Application Config
-    - [x] Get All Endpoint Configs
-    - [x] Create Endpoint Config
-    - [x] Delete Endpoint Config
-    - [x] Get Endpoint Config
-    - [x] Update Endpoint Config
-    - [x] Get All Manual Service Configs
-    - [x] Add Manual Service Config
-    - [x] Delete Manual Service Config
-    - [x] Update Manual Service Config
-    - [x] Replace All Manual Service Config
-    - [x] Get All Service Configs
-    - [x] Add Service Config
-    - [x] Replace All Service Configs
-    - [x] Order Service Config
-    - [x] Delete Service Config
-    - [x] Get Service Config
-    - [x] Update Service Config
-  - [x] **Application Alert Configuration**
-    - [x] Get All Smart Alert Configurations
-    - [x] Get Smart Alert Configuration
-    - [x] Get Smart Alert Config Versions
-    - [x] Create Smart Alert Configuration
-    - [x] Update Smart Alert Configuration
-    - [x] Delete Smart Alert Configuration
-    - [x] Recalculate Smart Alert Config Baseline
-    - [x] Enable Application Alert Config
-    - [x] Disable Smart Alert Config
-    - [x] Restore Smart Alert Config
-  - [ ] **Global Application Alert Configuration**
-    - [x] Find Active Global Application Alert Configs
-    - [x] Find Global Application Alert Config Versions
-    - [x] Find Global Application Alert Config
-    - [x] Delete Global Application Alert Config
-    - [x] Enable Global Application Alert Config
-    - [x] Disable Global Application Alert Config
-    - [x] Restore Global Application Alert Config
-    - [x] Create Global Application Alert Config
-    - [x] Update Global Application Alert Config
-
-- [ ] **Infrastructure**
-  - [ ] **Infrastructure Analyze**
-    - [x] Get Available Metrics
-    - [ ] Get Infrastructure Entities
-    - [ ] Get Grouped Entities with Aggregated Metrics
-    - [x] Get Available Plugins/Entity Types
-  - [x] **Infrastructure Catalog**
-    - [x] Get Payload Keys By Plugin ID
-    - [ ] Get infrastructure entities
-    - [x] Get grouped entities with aggregated metrics
-    - [x] Get available plugins/entity types
-  - [x] Infrastructure Catalog
-    - [x] Get Payload Keys By plugin ID
-    - [x] Get Infrastructure Catalog Metrics
-    - [x] Get Infrastructure Catalog Plugins
-    - [x] Get Infrastructure Catalog Plugins with Custom Metrics
-    - [x] Get Infrastructure Catalog Search Fields
-    - [x] Get Infrastructure Catalog Search Fields with Custom Metrics
-    - [x] Get Tag Catalog
-    - [x] Get Tag Catalog ALL
-  - [ ] **Infrastructure Metrics**
-    - [ ] Get Infrastructure Metrics
-  - [ ] **Infrastructure Resources**
-    - [x] Get Monitoring State
-    - [ ] Get Plugin Payload
-  - [x] Infrastructure Resources
-    - [x] Get Monitoring State
-    - [x] Search Snapshots
-    - [x] Get Snapshot Details for Single Snapshot ID
-    - [x] Get Details for Multiple Snapshot IDs
-    - [x] Search and discover snapshots based on search criteria
-    - [x] Software Versions
-  - [x] **Infrastructure Topology**
-    - [x] Get Related Hosts for Snapshot
-    - [x] Get Topology
-- [x] Events
-  - [x] Get Event
-  - [x] Get Events by IDs
+- [x] **Unified Application & Infrastructure Management** (`manage_instana_resources`)
+  - [x] Application Metrics
+    - [x] Query application metrics with flexible filtering
+    - [x] List services and endpoints
+    - [x] Group by tags and aggregate metrics
+  - [x] Application Alert Configuration
+    - [x] Find active alert configurations
+    - [x] Get alert configuration versions
+    - [x] Create, update, and delete alert configurations
+    - [x] Enable, disable, and restore alert configurations
+    - [x] Update historic baselines
+  - [x] Global Application Alert Configuration
+    - [x] Manage global alert configurations
+    - [x] Version control for global alerts
+  - [x] Application Settings
+    - [x] Manage application perspectives
+    - [x] Configure endpoints and services
+    - [x] Manage manual services
+- [x] **Infrastructure Analysis** (`analyze_infrastructure_elicitation`)
+  - [x] Two-pass elicitation for entity/metric queries
+  - [x] Support for multiple entity types (JVM, Kubernetes, Docker, etc.)
+  - [x] Flexible metric aggregation (max, mean, sum, etc.)
+  - [x] Advanced filtering by tags and properties
+  - [x] Grouping and ordering capabilities
+  - [x] Time range queries
+- [x] **Events**
+    - [x] Events
+      - [x] Get Event
+      - [x] Get Events by IDs
       - [x] Get Agent Monitoring Events
       - [x] Get Kubernetes Info Events
       - [x] Get Issues
@@ -765,83 +688,22 @@ Here is an example of a GitHub Copilot response:
     - [ ] Set Website Geo Mapping Rules
     - [ ] Upload Source Map File
     - [ ] Clear Source Map Upload 
-- [x] **Automation**
-  - [x] **Action Catalog**
-    - [x] Get Action Matches
-    - [x] Get Actions
-    - [x] Get Action Details
-    - [x] Get Action Types
-    - [x] Get Action Tags
-  - [x] **Action History**
-    - [x] Submit Automation Action
-    - [x] Get Action Instance Details
-    - [x] List Action Instances
-    - [x] Delete Action Instance
-
-- [x] **Settings**
-  - [x] **Custom Dashboards**
-    - [x] Get Custom Dashboards
-    - [x] Get Custom Dashboard
-    - [x] Add Custom Dashboard
-    - [x] Update Custom Dashboard
-    - [x] Delete Custom Dashboard
-    - [x] Get Shareable Users
-    - [x] Get Shareable API Tokens
-
-- [x] **Log**
-  - [x] **Log Alert Configuration**
-    - [x] Create Log Alert Config
-    - [x] Delete Log Alert Config
-    - [x] Disable Log Alert Config
-    - [x] Enable Log Alert Config
-    - [x] Find Active Log Alert Configs
-    - [x] Find Log Alert Config
-    - [x] Find Log Alert Config Versions
-    - [x] Restore Log Alert Config
-    - [x] Update Log Alert Config
-
 
 ## Available Tools
 
 | Tool                                                          | Category                       | Description                                            |
 |---------------------------------------------------------------|--------------------------------|------------------------------------------------------- |
-| `get_application_metrics`                                     | Application Metrics            | Get ApplicationMetrics                                 |
-| `get_endpoints_metrics`                                       | Application Metrics            | Get Endpoint metrics                                   |
-| `get_services_metrics`                                        | Application Metrics            | Get Service metrics                                    |
-| `get_application_data_metrics_v2`                             | Application Metrics            | Get Application Data Metrics                           |
-| `get_applications`                                            | Application Resources          | Get applications                                       |
-| `get_application_services`                                    | Application Resources          | Get applications/services                              |
-| `get_application_endpoints`                                   | Application Resources          | Get endpoints                                          |
-| `get_services`                                                | Application Resources          | Get services                                           |
-| `get_monitoring_state`                                        | Infrastructure Resources       | Monitored host count                                   |
-| `get_plugin_payload`                                          | Infrastructure Resources       | Get a payload for a snapshot                           |
-| `get_snapshots`                                               | Infrastructure Resources       | Search snapshots                                       |
-| `post_snapshots`                                              | Infrastructure Resources       | Get snapshot details for multiple snapshots            |
-| `get_snapshot`                                                | Infrastructure Resources       | Get snapshot details                                   |
-| `software_versions`                                           | Infrastructure Resources       | Get installed software                                 |
-| `get_available_payload_keys_by_plugin_id`                     | Infrastructure Catalog         | Get Payload Keys By plugin ID                          |
-| `get_infrastructure_catalog_metrics`                          | Infrastructure Catalog         | Get Infrastructure Catalog Metrics                     |
-| `get_infrastructure_catalog_plugins`                          | Infrastructure Catalog         | Get Infrastructure Catalog Plugins                     |
-| `get_infrastructure_catalog_plugins_with_custom_metrics`      | Infrastructure Catalog         | Get Infrastructure Catalog Plugins with Custom Metrics |
-| `get_infrastructure_catalog_search_fields`                    | Infrastructure Catalog         | Get Infrastructure Catalog Search Fields               |
-| `get_tag_catalog`                                             | Infrastructure Catalog         | Get Tag Catalog                                        |
-| `get_tag_catalog_all`                                         | Infrastructure Catalog         | Get Tag Catalog ALL                                    |
-| `get_related_hosts`                                           | Infrastructure Topology        | Get Related Hosts                                      |
-| `get_topology`                                                | Infrastructure Topology        | Get Topology                                           |
-| `get_available_metrics`                                       | Infrastructure Analyze         | Get Available Metrics                                  |
-| `get_entities`                                                | Infrastructure Analyze         | Get infrastructure entities                            |
-| `get_aggregated_entity_groups`                                | Infrastructure Analyze         | Get grouped entities with aggregated metrics           |
-| `get_available_plugins`                                       | Infrastructure Analyze         | Get available entity types                             |
-| `get_application_alert_configs`                               | Application Alert Configuration| Get All Smart Alert Configurations                     |
-| `find_application_alert_config`                               | Application Alert Configuration| Get Smart Alert Configuration                          |
-| `find_application_alert_config_versions`                      | Application Alert Configuration| Get Smart Alert Config Versions                        |
-| `create_application_alert_config`                             | Application Alert Configuration| Create Smart Alert Configuration                       |
-| `update_application_alert_config`                             | Application Alert Configuration| Update Smart Alert Configuration                       |
-| `delete_application_alert_config`                             | Application Alert Configuration| Delete Smart Alert Configuration                       |
-| `update_application_historic_baseline`                        | Application Alert Configuration| Recalculate Smart Alert Config Baseline                |
-| `enable_application_alert_config`                             | Application Alert Configuration| Enable Application Alert Config                        |
-| `disable_application_alert_config`                            | Application Alert Configuration| Disable Smart Alert Config                             |
-| `restore_application_alert_config`                            | Application Alert Configuration| Restore Smart Alert Config                             |
+| `manage_instana_resources`                                    | Application & Infrastructure   | Unified tool for managing application metrics, alert configs, and settings |
+| `analyze_infrastructure_elicitation`                          | Infrastructure Analyze         | Two-pass infrastructure analysis with entity/metric elicitation |
+| `get_actions`                                                 | Automation                     | Get available automation actions from action catalog   |
+| `get_action_details`                                          | Automation                     | Get detailed information about a specific action       |
+| `get_action_types`                                            | Automation                     | Get available action types                             |
+| `get_action_tags`                                             | Automation                     | Get available action tags                              |
+| `get_action_matches`                                          | Automation                     | Get action matches for a given search space            |
+| `submit_automation_action`                                    | Automation                     | Submit an automation action for execution              |
+| `get_action_instance_details`                                 | Automation                     | Get details of an automation action run result         |
+| `list_action_instances`                                       | Automation                     | List automation action run results                     |
+| `delete_action_instance`                                      | Automation                     | Delete an automation action run result                 |
 | `get_event`                                                   | Events                         | Get Specific Event by ID                               |
 | `get_kubernetes_info_events`                                  | Events                         | Get Kubernetes Info Events                             |
 | `get_agent_monitoring_events`                                 | Events                         | Get Agent Monitoring Events                            |
@@ -868,31 +730,6 @@ Here is an example of a GitHub Copilot response:
 | `get_website_geo_mapping_rules`                               | Website Configuration          | Get custom geo mapping rules for website               |
 | `set_website_geo_mapping_rules`                               | Website Configuration          | Set custom geo mapping rules for website               |
 | `upload_source_map_file`                                      | Website Configuration          | Upload source map file for a website                   |
-| `get_action_matches`                                          | Automation Action Catalog      | Get action matches based on payload                    |
-| `get_actions`                                                 | Automation Action Catalog      | Get all available actions                              |
-| `get_action_details`                                          | Automation Action Catalog      | Get details for a specific action                      |
-| `get_action_types`                                            | Automation Action Catalog      | Get all available action types                         |
-| `get_action_tags`                                             | Automation Action Catalog      | Get all available action tags                          |
-| `submit_automation_action`                                    | Automation Action History      | Submit an automation action for execution              |
-| `get_action_instance_details`                                 | Automation Action History      | Get details for a specific action instance             |
-| `list_action_instances`                                       | Automation Action History      | List all action instances                              |
-| `delete_action_instance`                                      | Automation Action History      | Delete a specific action instance                      |
-| `get_custom_dashboards`                                       | Settings Custom Dashboards     | Get all custom dashboards                              |
-| `get_custom_dashboard`                                        | Settings Custom Dashboards     | Get a specific custom dashboard by ID                  |
-| `add_custom_dashboard`                                        | Settings Custom Dashboards     | Create a new custom dashboard                          |
-| `update_custom_dashboard`                                     | Settings Custom Dashboards     | Update an existing custom dashboard                    |
-| `delete_custom_dashboard`                                     | Settings Custom Dashboards     | Delete a custom dashboard                              |
-| `get_shareable_users`                                         | Settings Custom Dashboards     | Get users who can access a dashboard                   |
-| `get_shareable_api_tokens`                                    | Settings Custom Dashboards     | Get API tokens that can access a dashboard             |
-| `create_log_alert_config`                                     | Log Alert Configuration        | Create a new log alert configuration                   |
-| `delete_log_alert_config`                                     | Log Alert Configuration        | Delete a log alert configuration                       |
-| `disable_log_alert_config`                                    | Log Alert Configuration        | Disable a log alert configuration                      |
-| `enable_log_alert_config`                                     | Log Alert Configuration        | Enable a log alert configuration                       |
-| `find_active_log_alert_configs`                               | Log Alert Configuration        | Find all active log alert configurations               |
-| `find_log_alert_config`                                       | Log Alert Configuration        | Find a specific log alert configuration                |
-| `find_log_alert_config_versions`                              | Log Alert Configuration        | Find all versions of a log alert configuration         |
-| `restore_log_alert_config`                                    | Log Alert Configuration        | Restore a previous version of log alert configuration  |
-| `update_log_alert_config`                                     | Log Alert Configuration        | Update an existing log alert configuration             |
 | `clear_source_map_upload_configuration`                       | Website Configuration          | Clear source map upload configuration for a website    |
 
 
@@ -902,61 +739,45 @@ The MCP server supports selective tool loading to optimize performance and reduc
 
 ### Available Tool Categories
 
-- **`infra`**: Infrastructure monitoring tools
-  - Infrastructure Resources: Host monitoring, snapshot management, software inventory
-  - Infrastructure Catalog: Plugin metadata, metrics definitions, tag management
-  - Infrastructure Topology: Host relationships and system topology visualization
-  - Infrastructure Analyze: Entity metrics, aggregation, and plugin discovery
-  - Infrastructure Metrics: Performance data collection and metrics retrieval
+- **`router`**: Unified application and infrastructure management
+  - `manage_instana_resources`: Single tool for application metrics, alert configurations, and settings
+  - Supports application perspectives, endpoints, services, and manual services
+  - Manages both application-specific and global alert configurations
 
-- **`app`**: Application performance tools
-  - Application Analyze: Trace and call analysis, performance diagnostics
-  - Application Resources: Service and endpoint discovery
-  - Application Metrics: Performance measurement across application components
-  - Application Catalog: Tag and metric catalog management
-  - Application Topology: Service dependency mapping and visualization
-  - Application Settings: Application, endpoint, and service configuration management
-  - Application Alert Configuration: Smart alert management and configuration
-  - Global Application Alert Configuration: Global alert policies and management
+- **`infra`**: Infrastructure analysis tools
+  - `analyze_infrastructure_elicitation`: Two-pass infrastructure analysis with entity/metric elicitation
+  - Supports multiple entity types (JVM, Kubernetes, Docker, hosts, databases, etc.)
+  - Flexible metric aggregation, filtering, grouping, and time range queries
+
+- **`automation`**: Automation action tools
+  - Action catalog management and action execution
+  - Action history and instance tracking
 
 - **`events`**: Event monitoring tools
   - Events: Kubernetes events, agent monitoring, incidents, issues, changes and system event tracking
 
 - **`website`**: Website monitoring tools
-  - Website Analyze: Website beacon analysis and performance insights
-  - Website Catalog: Website metadata, metrics, and tag definitions
-  - Website Configuration: Website setup and configuration management
-  - Website Metrics: Page load metrics and beacon data collection
-- **`automation`**: Automation tools
-  - Action Catalog: Action discovery, types, and tag management
-  - Action History: Action execution, instance tracking, and management
-
-
-- **`settings`**: Settings and configuration tools
-  - Custom Dashboards: Dashboard creation, management, and customization
-
-- **`logs`**: Log management tools
-  - Log Alert Configuration: Log-based alert setup and management
+  - Website Metrics: Performance measurement for websites
+  - Website Catalog: Website metadata and definitions
+  - Website Analyze: Website performance analysis
+  - Website Configuration: Website configuration management
 
 ### Usage Examples
 
 #### Using CLI (PyPI Installation)
 
 ```bash
-# Enable only infrastructure and events tools
-mcp-instana --tools infra,events --transport streamable-http
+# Enable only router (unified app/infra management) and events tools
+mcp-instana --tools router,events --transport streamable-http
 
-# Enable only application tools
-mcp-instana --tools app --transport streamable-http
+# Enable only infrastructure analysis tools
+mcp-instana --tools infra --transport streamable-http
+
+# Enable router and infrastructure analysis
+mcp-instana --tools router,infra --transport streamable-http
 
 # Enable events and website tools
 mcp-instana --tools events,website --transport streamable-http
-
-# Enable settings and logs tools
-mcp-instana --tools settings,logs --transport streamable-http
-
-# Enable multiple categories
-mcp-instana --tools app,infra,events,website --transport streamable-http
 
 # Enable all tools (default behavior)
 mcp-instana --transport streamable-http
@@ -968,11 +789,14 @@ mcp-instana --list-tools
 #### Using Development Installation
 
 ```bash
-# Enable only infrastructure and events tools
-uv run src/core/server.py --tools infra,events --transport streamable-http
+# Enable only router (unified app/infra management) and events tools
+uv run src/core/server.py --tools router,events --transport streamable-http
 
-# Enable only application tools
-uv run src/core/server.py --tools app --transport streamable-http
+# Enable only infrastructure analysis tools
+uv run src/core/server.py --tools infra --transport streamable-http
+
+# Enable router and infrastructure analysis
+uv run src/core/server.py --tools router,infra --transport streamable-http
 
 # Enable events and website tools
 uv run src/core/server.py --tools events,website --transport streamable-http

@@ -34,10 +34,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
         """Initialize the Infrastructure Catalog MCP tools client."""
         super().__init__(read_token=read_token, base_url=base_url)
 
-    @register_as_tool(
-        title="Get Available Payload Keys By Plugin ID",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_available_payload_keys_by_plugin_id(self,
                                                       plugin_id: str,
@@ -142,10 +139,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
             return {"error": f"Failed to get payload keys: {e!s}", "plugin_id": plugin_id}
 
 
-    @register_as_tool(
-        title="Get Infrastructure Catalog Metrics",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_infrastructure_catalog_metrics(self,
                                                  plugin: str,
@@ -248,10 +242,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
             return [f"Error: Failed to get metric catalog for plugin '{plugin}': {e!s}"]
 
 
-    @register_as_tool(
-        title="Get Infrastructure Catalog Plugins",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_infrastructure_catalog_plugins(self, ctx=None, api_client=None) -> Dict[str, Any]:
         """
@@ -321,10 +312,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
 
 
 
-    @register_as_tool(
-        title="Get Infrastructure Catalog Plugins With Custom Metrics",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_infrastructure_catalog_plugins_with_custom_metrics(self, ctx=None, api_client=None) -> Dict[str, Any] | List[Dict[str, Any]]:
         """
@@ -364,10 +352,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
             return {"error": f"Failed to get plugins with custom metrics: {e!s}"}
 
 
-    @register_as_tool(
-        title="Get Tag Catalog",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_tag_catalog(self, plugin: str, ctx=None, api_client=None) -> Dict[str, Any]:
         """
@@ -464,10 +449,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
             return {"error": f"Failed to get tag catalog: {e!s}"}
 
 
-    @register_as_tool(
-        title="Get Tag Catalog All",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_tag_catalog_all(self, ctx=None, api_client=None) -> Dict[str, Any]:
         """
@@ -586,10 +568,7 @@ class InfrastructureCatalogMCPTools(BaseInstanaClient):
         return summary
 
 
-    @register_as_tool(
-        title="Get Infrastructure Catalog Search Fields",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
     @with_header_auth(InfrastructureCatalogApi)
     async def get_infrastructure_catalog_search_fields(self, ctx=None, api_client=None) -> List[str] | Dict[str, Any]:
         """

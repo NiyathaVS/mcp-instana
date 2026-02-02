@@ -496,50 +496,6 @@ class TestInfrastructureResourcesE2E:
     # ==================== EDGE CASES AND ERROR HANDLING ====================
 
     @pytest.mark.asyncio
-    async def test_all_methods_with_none_api_client(self, instana_credentials):
-        """Test all methods with None api_client (should use decorator logic)"""
-        client = InfrastructureResourcesMCPTools(
-            read_token=instana_credentials["api_token"],
-            base_url=instana_credentials["base_url"]
-        )
-
-        # Test that methods handle None api_client gracefully
-        methods_to_test = [
-            client.get_monitoring_state,
-            client.get_plugin_payload,
-            client.get_snapshot,
-            client.get_snapshots,
-            client.post_snapshots,
-            client.software_versions
-        ]
-
-        for method in methods_to_test:
-            try:
-                if method == client.get_plugin_payload:
-                    result = await method("test", "test", api_client=None)
-                elif method == client.get_snapshot:
-                    result = await method("test", api_client=None)
-                elif method == client.post_snapshots:
-                    result = await method(["test"], api_client=None)
-                else:
-                    result = await method(api_client=None)
-
-                # When api_client=None, the decorator creates a real client, so we expect either:
-                # 1. A successful result (dict or object)
-                # 2. An error from the real API call
-                assert isinstance(result, (dict, object))
-                # If it's a dict, it might contain an error, if it's an object, it might be a successful response
-                if isinstance(result, dict):
-                    # Could be success or error
-                    pass
-                elif isinstance(result, object):
-                    # Could be a successful response object
-                    pass
-            except Exception as e:
-                # This is expected behavior when decorator tries to create real clients
-                assert "Authentication" in str(e) or "Missing credentials" in str(e) or "API" in str(e)
-
-    @pytest.mark.asyncio
     async def test_debug_print_function(self, instana_credentials):
         """Test the debug_print function"""
         # Import the debug_print function

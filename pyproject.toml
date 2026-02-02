@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-instana"
-version = "0.3.1"
+version = "0.6.2"
 description = "MCP server for Instana"
 authors = [
     {name = "Elina Priyadarshinee", email = "Elina.priyadarshinee1@ibm.com"},
@@ -26,6 +26,8 @@ dependencies = [
     "mcp",
     # Instana API client - imported in src/event/events_tools.py
     "instana-client==1.0.2",
+    # Lazy imports for Instana SDK - required by instana-client
+    "lazy_imports",
     # HTTP client - imported in src/core/utils.py
     "requests==2.32.4",
     # Environment loading - imported in src/core/server.py
@@ -119,6 +121,7 @@ ignore = [
     "PLW2901", # With statement variable overwritten by assignment target
     "SIM108",  # Use ternary operator instead of if-else-block
     "PLR0913", # Too many arguments in function definition
+    "ERA001",  # Found commented-out code
 ]
 
 # Allow autofix for all enabled rules (when `--fix` is provided)

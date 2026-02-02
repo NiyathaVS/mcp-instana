@@ -22,36 +22,6 @@ class TestMCPServerIntegrationE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
-    async def test_tool_execution_get_applications(self, instana_credentials):
-        """Test tool execution for get_applications."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_resource_client = MagicMock()
-        mock_state.app_resource_client.get_applications = AsyncMock(return_value={
-            "applications": [{"id": "app-1", "name": "Test App"}]
-        })
-        result = await execute_tool("get_applications", {}, mock_state)
-        assert "app-1" in result
-        assert "Test App" in result
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_tool_execution_get_application_tag_catalog(self, instana_credentials):
-        """Test tool execution for get_application_tag_catalog."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_catalog_client = MagicMock()
-        mock_state.app_catalog_client.get_application_tag_catalog = AsyncMock(return_value={
-            "tagTree": [{"name": "test-tag", "children": []}]
-        })
-        result = await execute_tool("get_application_tag_catalog", {
-            "use_case": "GROUPING",
-            "data_source": "CALLS"
-        }, mock_state)
-        assert "test-tag" in result
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
     async def test_tool_execution_not_found(self, instana_credentials):
         """Test tool execution when tool is not found."""
         from src.core.server import MCPState
@@ -61,204 +31,11 @@ class TestMCPServerIntegrationE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
-    async def test_tool_execution_with_parameters(self, instana_credentials):
-        """Test tool execution with parameters."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_resource_client = MagicMock()
-        mock_state.app_resource_client.get_application_services = AsyncMock(return_value={
-            "services": [{"id": "service-1", "name": "Test Service"}]
-        })
-        result = await execute_tool("get_application_services", {
-            "name_filter": "app-1",
-            "to_time": 1234567890
-        }, mock_state)
-        assert "service-1" in result
-        assert "Test Service" in result
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_tool_execution_error_handling(self, instana_credentials):
-        """Test tool execution error handling."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_resource_client = MagicMock()
-        mock_state.app_resource_client.get_applications = AsyncMock(side_effect=Exception("API Error"))
-        result = await execute_tool("get_applications", {}, mock_state)
-        assert "Error executing tool get_applications" in result
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_multiple_tool_execution_flow(self, instana_credentials):
-        """Test a flow of multiple tool executions."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-
-        # Create mock clients with proper method setup
-        mock_app_resource_client = type('MockAppResourceClient', (), {})()
-        mock_app_resource_client.get_applications = AsyncMock(return_value={
-            "applications": [{"id": "app-1", "name": "Test App"}]
-        })
-        mock_app_resource_client.get_application_services = AsyncMock(return_value={
-            "services": [{"id": "service-1", "name": "Test Service"}]
-        })
-        mock_state.app_resource_client = mock_app_resource_client
-
-        mock_app_catalog_client = type('MockAppCatalogClient', (), {})()
-        mock_app_catalog_client.get_application_metric_catalog = AsyncMock(return_value={
-            "metrics": [{"id": "cpu_usage", "name": "CPU Usage"}]
-        })
-        mock_state.app_catalog_client = mock_app_catalog_client
-
-        # Execute get_applications
-        result1 = await execute_tool("get_applications", {}, mock_state)
-        # Execute get_application_services
-        result2 = await execute_tool("get_application_services", {"name_filter": "app-1"}, mock_state)
-        # Execute get_application_metric_catalog
-        result3 = await execute_tool("get_application_metric_catalog", {}, mock_state)
-
-        assert "app-1" in result1
-        assert "service-1" in result2
-        assert "cpu_usage" in result3
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_tool_execution_with_context(self, instana_credentials):
-        """Test tool execution with context parameter."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_catalog_client = MagicMock()
-        mock_state.app_catalog_client.get_application_tag_catalog = AsyncMock(return_value={
-            "tagTree": [{"name": "test-tag", "children": []}]
-        })
-        context = {"user_id": "test_user", "session_id": "test_session"}
-        result = await execute_tool("get_application_tag_catalog", {
-            "use_case": "GROUPING",
-            "data_source": "CALLS",
-            "ctx": context
-        }, mock_state)
-        assert "test-tag" in result
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_create_clients_all_categories(self, instana_credentials):
-        """Test create_clients with all categories enabled."""
-        result = create_clients(
-            token=instana_credentials["api_token"],
-            base_url=instana_credentials["base_url"],
-            enabled_categories="all"
-        )
-        assert isinstance(result, MCPState)
-        # Check that all client attributes are set
-        assert hasattr(result, 'events_client')
-        assert hasattr(result, 'infra_client')
-        assert hasattr(result, 'app_resource_client')
-        assert hasattr(result, 'app_metrics_client')
-        assert hasattr(result, 'app_alert_client')
-        assert hasattr(result, 'infra_catalog_client')
-        assert hasattr(result, 'infra_topo_client')
-        assert hasattr(result, 'infra_analyze_client')
-        assert hasattr(result, 'infra_metrics_client')
-        assert hasattr(result, 'app_catalog_client')
-        assert hasattr(result, 'app_topology_client')
-        assert hasattr(result, 'app_analyze_client')
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_create_clients_specific_categories(self, instana_credentials):
-        """Test create_clients with specific categories enabled."""
-        result = create_clients(
-            token=instana_credentials["api_token"],
-            base_url=instana_credentials["base_url"],
-            enabled_categories="app,infra"
-        )
-        assert isinstance(result, MCPState)
-        # Check that app and infra clients are set
-        assert hasattr(result, 'app_resource_client')
-        assert hasattr(result, 'infra_client')
-        # Events client should not be set
-        assert result.events_client is None
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_create_clients_invalid_category(self, instana_credentials):
-        """Test create_clients with invalid category."""
-        result = create_clients(
-            token=instana_credentials["api_token"],
-            base_url=instana_credentials["base_url"],
-            enabled_categories="invalid_category"
-        )
-        assert isinstance(result, MCPState)
-        # All clients should be None since invalid category
-        assert result.events_client is None
-        assert result.infra_client is None
-        assert result.app_resource_client is None
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_create_clients_client_creation_error(self, instana_credentials):
-        """Test create_clients when client creation fails."""
-        # Mock the specific client class to raise an exception
-        with patch('src.application.application_resources.ApplicationResourcesMCPTools.__init__', side_effect=Exception("Client creation failed")):
-            result = create_clients(
-                token=instana_credentials["api_token"],
-                base_url=instana_credentials["base_url"],
-                enabled_categories="app"
-            )
-            assert isinstance(result, MCPState)
-            assert result.app_resource_client is None
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_get_enabled_client_configs_all(self):
-        """Test get_enabled_client_configs with 'all' categories."""
-        configs = get_enabled_client_configs("all")
-        assert isinstance(configs, list)
-        assert len(configs) > 0
-        # Check that all categories are included
-        category_names = [config[0] for config in configs]
-        assert 'app_resource_client' in category_names
-        assert 'infra_client' in category_names
-        assert 'events_client' in category_names
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_get_enabled_client_configs_specific(self):
-        """Test get_enabled_client_configs with specific categories."""
-        configs = get_enabled_client_configs("app,infra")
-        assert isinstance(configs, list)
-        assert len(configs) > 0
-        # Check that only app and infra categories are included
-        category_names = [config[0] for config in configs]
-        assert 'app_resource_client' in category_names
-        assert 'infra_client' in category_names
-        assert 'events_client' not in category_names
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
     async def test_get_enabled_client_configs_invalid(self):
         """Test get_enabled_client_configs with invalid category."""
         configs = get_enabled_client_configs("invalid_category")
         assert isinstance(configs, list)
         assert len(configs) == 0
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_get_enabled_client_configs_all(self):
-        """Test get_enabled_client_configs with 'all' categories."""
-        configs = get_enabled_client_configs("all")
-        assert isinstance(configs, list)
-        assert len(configs) > 0
-        # Check that all categories are included
-        config_names = [config[0] for config in configs]
-        expected_clients = [
-            'events_client', 'infra_client', 'infra_catalog_client',
-            'infra_topo_client', 'infra_analyze_client', 'app_resource_client',
-            'app_metrics_client', 'app_alert_client', 'infra_metrics_client',
-            'app_catalog_client', 'app_topology_client', 'app_analyze_client'
-        ]
-        for expected_client in expected_clients:
-            assert expected_client in config_names
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
@@ -416,43 +193,6 @@ class TestMCPServerIntegrationE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
-    async def test_execute_tool_return_types(self, instana_credentials):
-        """Test execute_tool with different return types."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_resource_client = MagicMock()
-
-        # Test with dict return
-        mock_state.app_resource_client.get_applications = AsyncMock(return_value={"applications": []})
-        result1 = await execute_tool("get_applications", {}, mock_state)
-        assert isinstance(result1, str)
-
-        # Test with list return
-        mock_state.app_resource_client.get_applications = AsyncMock(return_value=["app1", "app2"])
-        result2 = await execute_tool("get_applications", {}, mock_state)
-        assert isinstance(result2, str)
-
-        # Test with string return
-        mock_state.app_resource_client.get_applications = AsyncMock(return_value="test result")
-        result3 = await execute_tool("get_applications", {}, mock_state)
-        assert isinstance(result3, str)
-        assert "test result" in result3
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_execute_tool_exception_in_method(self, instana_credentials):
-        """Test execute_tool when the method itself raises an exception."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-        mock_state.app_resource_client = MagicMock()
-        mock_state.app_resource_client.get_applications = AsyncMock(side_effect=ValueError("Invalid argument"))
-
-        result = await execute_tool("get_applications", {}, mock_state)
-        assert "Error executing tool get_applications" in result
-        assert "Invalid argument" in result
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
     async def test_execute_tool_empty_arguments(self, instana_credentials):
         """Test execute_tool with empty arguments."""
         from src.core.server import MCPState
@@ -602,41 +342,6 @@ class TestMCPServerIntegrationE2E:
                 assert server is not None
                 # Verify that add_prompt was called on the server (prompt registration happens internally)
                 mock_server.add_prompt.assert_called()
-
-    @pytest.mark.asyncio
-    @pytest.mark.mocked
-    async def test_execute_tool_with_all_client_types(self, instana_credentials):
-        """Test execute_tool with all different client types."""
-        from src.core.server import MCPState
-        mock_state = MCPState()
-
-        # Test with each client type
-        clients_to_test = [
-            ('events_client', 'get_events'),
-            ('infra_client', 'get_infrastructure'),
-            ('app_resource_client', 'get_applications'),
-            ('app_metrics_client', 'get_metrics'),
-            ('app_alert_client', 'get_alerts'),
-            ('infra_catalog_client', 'get_catalog'),
-            ('infra_topo_client', 'get_topology'),
-            ('infra_analyze_client', 'get_analysis'),
-            ('infra_metrics_client', 'get_metrics'),
-            ('app_catalog_client', 'get_catalog'),
-            ('app_topology_client', 'get_topology'),
-            ('app_analyze_client', 'get_analysis')
-        ]
-
-        for client_attr, method_name in clients_to_test:
-            # Create a mock client with the method using type() to avoid MagicMock issues
-            mock_client = type('MockClient', (), {})()
-            mock_client_method = AsyncMock(return_value={"result": "test"})
-            setattr(mock_client, method_name, mock_client_method)
-            setattr(mock_state, client_attr, mock_client)
-
-            # Test the method
-            result = await execute_tool(method_name, {}, mock_state)
-            assert isinstance(result, str)
-            assert "test" in result
 
     @pytest.mark.asyncio
     @pytest.mark.mocked

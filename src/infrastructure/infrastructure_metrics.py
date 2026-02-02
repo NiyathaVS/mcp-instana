@@ -41,10 +41,8 @@ class InfrastructureMetricsMCPTools(BaseInstanaClient):
         """Initialize the Infrastructure Analyze MCP tools client."""
         super().__init__(read_token=read_token, base_url=base_url)
 
-    @register_as_tool(
-        title="Get Infrastructure Metrics",
-        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
-    )
+    # @register_as_tool(...)  # Disabled for future reference
+    # Note: Not exposed as direct MCP tool - accessed via smart_router_tool.py
     @with_header_auth(InfrastructureMetricsApi)
     async def get_infrastructure_metrics(self,
                                          offline: Optional[StrictBool] = False,
@@ -78,18 +76,13 @@ class InfrastructureMetricsMCPTools(BaseInstanaClient):
 
         try:
 
-            # If no metrics is provided, return an error
-            if not metrics:
-                return {"error": "Metrics is required for this operation"}
-
-
-            # If no plugin is provided, return an error
-            if not plugin:
-                return {"error": "Plugin is required for this operation"}
-
-            # If no query is provided, return an error
-            if not query:
-                return {"error": "Query is required for this operation"}
+            # Two-Pass Elicitation: Check for required parameters
+            elicitation_request = self._check_elicitation_for_infra_metrics(
+                metrics, plugin, query
+            )
+            if elicitation_request:
+                logger.info("Elicitation needed for infrastructure metrics")
+                return elicitation_request
 
 
             if not time_frame:
@@ -126,6 +119,7 @@ class InfrastructureMetricsMCPTools(BaseInstanaClient):
 
             # Create the InfrastructureMetricsApi object
             get_combined_metrics = GetCombinedMetrics(**request_body)
+
 
             # Call the get_infrastructure_metrics method from the SDK
             result = api_client.get_infrastructure_metrics(
@@ -173,4 +167,86 @@ class InfrastructureMetricsMCPTools(BaseInstanaClient):
 
         except Exception as e:
             logger.error(f"Error in get_infrastructure_metrics: {e}", exc_info=True)
-            return {"error": f"Failed to get Infra metrics: {e!s}"}
+            return {"error": f"Failed to get infrastructure metrics: {e!s}"}
+
+    def _check_elicitation_for_infra_metrics(
+        self,
+        metrics: Optional[List[str]],
+        plugin: Optional[str],
+        query: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Check if required parameters are missing and create elicitation request (Two-Pass).
+
+        Infrastructure metrics require plugin and query parameters.
+
+        Args:
+            metrics: Metrics list if provided
+            plugin: Plugin name if provided
+            query: Query filter if provided
+
+        Returns:
+            Elicitation request dict if parameters are missing, None otherwise
+        """
+        missing_params = []
+
+        # Check for required parameters
+        if not metrics:
+            missing_params.append({
+                "name": "metrics",
+                "description": "List of metric names to retrieve (REQUIRED)",
+                "examples": ["cpu.used", "memory.used", "disk.used"],
+                "type": "list"
+            })
+
+        if not plugin:
+            missing_params.append({
+                "name": "plugin",
+                "description": "Plugin type for infrastructure entity (REQUIRED)",
+                "examples": ["host", "docker", "kubernetes", "jvm"],
+                "type": "string"
+            })
+
+        if not query:
+            missing_params.append({
+                "name": "query_filter",
+                "description": "Query filter to select entities (REQUIRED)",
+                "examples": ["entity.type:host", "entity.type:docker", "entity.tag:production"],
+                "type": "string"
+            })
+
+        # If any required parameters are missing, return elicitation request
+        if missing_params:
+            return self._create_elicitation_request(missing_params)
+
+        return None
+
+    def _create_elicitation_request(self, missing_params: list) -> Dict[str, Any]:
+        """
+        Create an elicitation request following MCP pattern.
+
+        Args:
+            missing_params: List of missing parameter descriptions
+
+        Returns:
+            Elicitation request dict
+        """
+        # Build simple, user-friendly parameter descriptions
+        param_lines = []
+        for param in missing_params:
+            # Use the examples from the parameter definition instead of hardcoding
+            examples = ", ".join([str(ex) for ex in param["examples"][:3]])
+            param_lines.append(f"{param['name']}: {examples}")
+
+        message = (
+            "I need:\n\n"
+            + "\n".join(param_lines)
+        )
+
+        return {
+            "elicitation_needed": True,
+            "message": message,
+            "missing_parameters": [p["name"] for p in missing_params],
+            "parameter_details": missing_params,
+            "instructions": "Call query_instana_metrics again with these parameters filled in."
+        }
