@@ -1,4 +1,9 @@
 # Changelog
+### 0.7.1
+
+-   **Fix:** Fixed schema directory not being included in PyPI package distribution.
+-   **Enhancement:** Added OTelLLM schema support for infrastructure analyze.
+
 ### 0.7.0
 
 -   **Dependency Update:** Refactored Applications and Infrastructure tools for optimized performance.
