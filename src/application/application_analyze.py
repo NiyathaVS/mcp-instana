@@ -4,7 +4,11 @@ Application Analyze MCP Tools Module
 This module provides application analyze tool functionality for Instana monitoring.
 """
 
+import json
 import logging
+import os
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from mcp.types import ToolAnnotations
@@ -53,6 +57,36 @@ class ApplicationAnalyzeMCPTools(BaseInstanaClient):
         except Exception as e:
             logger.error(f"Error initializing ApplicationAnalyzeApi: {e}", exc_info=True)
             raise
+
+    # CRUD Operations Dispatcher - called by application_smart_router_tool.py
+    async def execute_analyze_operation(
+        self,
+        operation: str,
+        params: Optional[Union[Dict[str, Any], str]] = None,
+        ctx=None,
+    ) -> Dict[str, Any]:
+        """
+        Execute Application Analyze operations.
+        Called by the smart router tool.
+
+        Args:
+            operation: Operation to perform (get_all_traces)
+            params: Dictionary containing 'payload'
+            ctx: MCP context
+
+        Returns:
+            Operation result dictionary
+        """
+        try:
+            if operation == "get_all_traces":
+                payload = params.get('payload')
+                return await self.get_all_traces(payload, ctx=ctx)
+            else:
+                return {"error": f"Operation '{operation}' not supported"}
+
+        except Exception as e:
+            logger.error(f"Error executing {operation}: {e}", exc_info=True)
+            return {"error": f"Error executing {operation}: {e!s}"}
 
     # @register_as_tool(
     #     title="Get Call Details",
@@ -172,136 +206,130 @@ class ApplicationAnalyzeMCPTools(BaseInstanaClient):
     #         return {"error": f"Failed to get trace details: {e!s}"}
 
 
+    # @register_as_tool decorator commented out - not exposed as MCP tool
     # @register_as_tool(
     #     title="Get All Traces",
     #     annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False)
     # )
-    # @with_header_auth(ApplicationAnalyzeApi)
-    # async def get_all_traces(
-    #     self,
-    #     payload: Optional[Union[Dict[str, Any], str]]=None,
-    #     api_client = None,
-    #     ctx=None
-    # ) -> Dict[str, Any]:
-    #     """
-    #     Get all traces.
-    #     This tool endpoint retrieves the metrics for traces.
+    @with_header_auth(ApplicationAnalyzeApi)
+    async def get_all_traces(
+        self,
+        payload: Optional[Union[Dict[str, Any], str]]=None,
+        api_client = None,
+        ctx=None
+    ) -> Dict[str, Any]:
+        """
+        Get traces from Instana API and save to JSONL file.
 
-    #     Sample payload: {
-    #     "includeInternal": false,
-    #     "includeSynthetic": false,
-    #     "pagination": {
-    #         "retrievalSize": 1
-    #     },
-    #     "tagFilterExpression": {
-    #         "type": "EXPRESSION",
-    #         "logicalOperator": "AND",
-    #         "elements": [
-    #         {
-    #             "type": "TAG_FILTER",
-    #             "name": "endpoint.name",
-    #             "operator": "EQUALS",
-    #             "entity": "DESTINATION",
-    #             "value": "GET /"
-    #         },
-    #         {
-    #             "type": "TAG_FILTER",
-    #             "name": "service.name",
-    #             "operator": "EQUALS",
-    #             "entity": "DESTINATION",
-    #             "value": "groundskeeper"
-    #         }
-    #         ]
-    #     },
-    #     "order": {
-    #         "by": "traceLabel",
-    #         "direction": "DESC"
-    #     }
-    #     }
+        Fetches one page of traces and writes items to /tmp/instana_traces_{timestamp}.jsonl.
+        Returns file path and cursor info for fetching next page if available.
 
-    #     Returns:
-    #         Dict[str, Any]: List of traces matching the criteria.
-    #     """
-    #     try:
-    #         # Parse the payload if it's a string
-    #         if isinstance(payload, str):
-    #             logger.debug("Payload is a string, attempting to parse")
-    #             try:
-    #                 import json
-    #                 try:
-    #                     parsed_payload = json.loads(payload)
-    #                     logger.debug("Successfully parsed payload as JSON")
-    #                     request_body = parsed_payload
-    #                 except json.JSONDecodeError as e:
-    #                     logger.debug(f"JSON parsing failed: {e}, trying with quotes replaced")
+        Args:
+            payload: Request payload for GetTraces API
+            api_client: API client instance
+            ctx: MCP context
 
-    #                     # Try replacing single quotes with double quotes
-    #                     fixed_payload = payload.replace("'", "\"")
-    #                     try:
-    #                         parsed_payload = json.loads(fixed_payload)
-    #                         logger.debug("Successfully parsed fixed JSON")
-    #                         request_body = parsed_payload
-    #                     except json.JSONDecodeError:
-    #                         # Try as Python literal
-    #                         import ast
-    #                         try:
-    #                             parsed_payload = ast.literal_eval(payload)
-    #                             logger.debug("Successfully parsed payload as Python literal")
-    #                             request_body = parsed_payload
-    #                         except (SyntaxError, ValueError) as e2:
-    #                             logger.debug(f"Failed to parse payload string: {e2}")
-    #                             return {"error": f"Invalid payload format: {e2}", "payload": payload}
-    #             except Exception as e:
-    #                 logger.debug(f"Error parsing payload string: {e}")
-    #                 return {"error": f"Failed to parse payload: {e}", "payload": payload}
-    #         else:
-    #             # If payload is already a dictionary, use it directly
-    #             logger.debug("Using provided payload dictionary")
-    #             request_body = payload
+        Sample payload: {
+        "includeInternal": false,
+        "includeSynthetic": false,
+        "pagination": {
+            "retrievalSize": 200,
+            "ingestionTime": 1234567890,
+            "offset": 10
+        },
+        "tagFilterExpression": {
+            "type": "EXPRESSION",
+            "logicalOperator": "AND",
+            "elements": [
+            {
+                "type": "TAG_FILTER",
+                "name": "endpoint.name",
+                "operator": "EQUALS",
+                "entity": "DESTINATION",
+                "value": "GET /"
+            },
+            {
+                "type": "TAG_FILTER",
+                "name": "service.name",
+                "operator": "EQUALS",
+                "entity": "DESTINATION",
+                "value": "groundskeeper"
+            }
+            ]
+        },
+        "order": {
+            "by": "traceLabel",
+            "direction": "DESC"
+        }
+        }
 
-    #         # Import the GetTraces class
-    #         try:
-    #             from instana_client.models.get_traces import (
-    #                 GetTraces,
-    #             )
-    #             from instana_client.models.group import Group
-    #             logger.debug("Successfully imported GetTraces")
-    #         except ImportError as e:
-    #             logger.debug(f"Error importing GetTraces: {e}")
-    #             return {"error": f"Failed to import GetTraces: {e!s}"}
 
-    #         # Create an GetTraces object from the request body
-    #         try:
-    #             query_params = {}
-    #             if request_body and "tag_filter_expression" in request_body:
-    #                 query_params["tag_filter_expression"] = request_body["tag_filter_expression"]
-    #             logger.debug(f"Creating get_traces with params: {query_params}")
-    #             config_object = GetTraces(**query_params)
-    #             logger.debug("Successfully got traces")
-    #         except Exception as e:
-    #             logger.debug(f"Error creating get_traces: {e}")
-    #             return {"error": f"Failed to get tracest: {e!s}"}
+        Returns:
+            Dict containing filePath, itemCount, fileSizeBytes, canLoadMore, totalHits,
+            and cursor fields (ingestionTime, offset) if more data available
+        """
+        try:
+            # Parse the payload if it's a string
+            if isinstance(payload, str):
+                logger.debug("Payload is a string, attempting to parse")
+                try:
+                    request_body = json.loads(payload)
+                except json.JSONDecodeError:
+                    try:
+                        request_body = json.loads(payload.replace("'", "\""))
+                    except json.JSONDecodeError:
+                        import ast
+                        try:
+                            request_body = ast.literal_eval(payload)
+                        except (SyntaxError, ValueError) as e:
+                            return {"error": f"Invalid payload format: {e}"}
+            else:
+                request_body = payload if payload is not None else {}
 
-    #         # Call the get_traces method from the SDK
-    #         logger.debug("Calling get_traces with config object")
-    #         result = api_client.get_traces(
-    #             get_traces=config_object
-    #         )
-    #         # Convert the result to a dictionary
-    #         if hasattr(result, 'to_dict'):
-    #             result_dict = result.to_dict()
-    #         else:
-    #             # If it's already a dict or another format, use it as is
-    #             result_dict = result or {
-    #                 "success": True,
-    #                 "message": "Get traces"
-    #             }
+            # Prepare output path
+            timestamp = int(datetime.now().timestamp())
+            output_dir = os.getenv("INSTANA_API_TEMPORARY_DIR", "/tmp")
+            output_path = f"{output_dir}/instana_traces_{timestamp}.jsonl"
 
-    #         logger.debug(f"Result from get_traces: {result_dict}")
-    #         return result_dict
-    #     except Exception as e:
-    #         logger.error(f"Error in get_traces: {e}")
-    #         return {"error": f"Failed to get traces: {e!s}"}
+            # Call API
+            config = GetTraces.from_dict(request_body)
+            result = api_client.get_traces(get_traces=config)
+            result_dict = result.to_dict() if hasattr(result, 'to_dict') else result
+
+            # Write items to JSONL file
+            items = result_dict.get("items", [])
+            with open(output_path, 'w') as f:
+                for item in items:
+                    f.write(json.dumps(item) + '\n')
+            file_size = Path(output_path).stat().st_size if Path(output_path).exists() else 0
+
+            can_load_more = result_dict.get("canLoadMore", False)
+            total_hits = result_dict.get("totalHits")
+
+            # Build response
+            response = {
+                "filePath": output_path,
+                "itemCount": len(items),
+                "fileSizeBytes": file_size,
+                "canLoadMore": can_load_more,
+                "totalHits": total_hits
+            }
+
+            # Add cursor fields if more data available
+            if items and can_load_more and "cursor" in items[-1]:
+                cursor = items[-1]["cursor"]
+                if "ingestionTime" in cursor:
+                    response["ingestionTime"] = cursor["ingestionTime"]
+                if "offset" in cursor:
+                    response["offset"] = cursor["offset"]
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Error in get_traces: {e}", exc_info=True)
+            if Path(output_path).exists():
+                Path(output_path).unlink()
+            return {"error": f"Failed to get traces: {e!s}"}
 
     # @register_as_tool(
     #     title="Get Grouped Trace Metrics",

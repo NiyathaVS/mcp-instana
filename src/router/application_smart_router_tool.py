@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from mcp.types import ToolAnnotations
 
+from src.core.timestamp_utils import convert_to_timestamp
 from src.core.utils import BaseInstanaClient, register_as_tool
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
 
         # Initialize the application tool clients
         from src.application.application_alert_config import ApplicationAlertMCPTools
+        from src.application.application_analyze import ApplicationAnalyzeMCPTools
         from src.application.application_call_group import ApplicationCallGroupMCPTools
         from src.application.application_catalog import ApplicationCatalogMCPTools
         from src.application.application_global_alert_config import (
@@ -41,6 +43,7 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
         self.app_resources_client = ApplicationResourcesMCPTools(read_token, base_url)
         self.app_settings_client = ApplicationSettingsMCPTools(read_token, base_url)
         self.app_catalog_client = ApplicationCatalogMCPTools(read_token, base_url)
+        self.app_analyze_client = ApplicationAnalyzeMCPTools(read_token, base_url)
 
         logger.info("Smart Router initialized with Application tools")
 
@@ -64,6 +67,7 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
         - "global_alert_config": Manage global application alert configurations
         - "settings": Manage application perspectives, endpoints, services, manual services
         - "catalog": Access application tag and metric catalog information
+        - "analyze": Analyze application traces and calls
 
         METRICS (resource_type="metrics"):
             operation: "application"
@@ -115,8 +119,40 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
             Get tag catalog: operation="get_tag_catalog", params={"use_case": "GROUPING", "data_source": "CALLS"}
             Get metric catalog: operation="get_metric_catalog"
 
+        ANALYZE (resource_type="analyze"):
+            operations: get_all_traces
+            params: {payload}
+
+            Payload parameters:
+            - timeFrame: Time range (windowSize, to)
+                windowSize: Time window in milliseconds
+                to: End time - can be provided as:
+                    - Unix timestamp in milliseconds (e.g., 1710658800000)
+                    - Human-readable datetime string (e.g., "10 March 2026, 2:00 PM")
+                    - Datetime with timezone (e.g., "10 March 2026, 2:00 PM|IST")
+                    - If no timezone specified, UTC is assumed
+                Supported datetime formats: "10 March 2026, 2:00 PM", "2026-03-10 14:00:00", "March 10, 2026 2 PM", etc.
+            - includeInternal, includeSynthetic: Include internal/synthetic traces
+            - tagFilterExpression: Filter by tags
+            - pagination: {retrievalSize, ingestionTime, offset}
+            - order: {by, direction}
+
+            Minimal example:
+            params={"payload": {"timeFrame": {"windowSize": 3600000, "to": 1710658800000}, "pagination": {"retrievalSize": 200}}}
+
+            Example with datetime:
+            params={"payload": {"timeFrame": {"windowSize": 3600000, "to": "10 March 2026, 2:00 PM|UTC"}, "pagination": {"retrievalSize": 200}}}
+
+            Full example:
+            params={"payload": {"timeFrame": {"windowSize": 3600000, "to": 1710658800000}, "includeInternal": false, "includeSynthetic": false, "tagFilterExpression": {"type": "EXPRESSION", "logicalOperator": "AND", "elements": [{"type": "TAG_FILTER", "name": "service.name", "operator": "EQUALS", "entity": "DESTINATION", "value": "groundskeeper"}]}, "pagination": {"retrievalSize": 200}, "order": {"by": "traceLabel", "direction": "DESC"}}}
+
+            Pagination example (for next page):
+            params={"payload": {"timeFrame": {"windowSize": 3600000, "to": 1710658800000}, "pagination": {"retrievalSize": 200, "ingestionTime": 1725519793, "offset": 199}}}
+
+            Note: Trace data saved to /tmp/instana_traces_{timestamp}.jsonl. Returns filePath, itemCount, fileSizeBytes, canLoadMore, totalHits, and cursor (ingestionTime, offset) if more data available. Use cursor values in pagination for next page.
+
         Args:
-            resource_type: "metrics", "alert_config", "global_alert_config", "settings", or "catalog"
+            resource_type: "metrics", "alert_config", "global_alert_config", "settings", "catalog", or "analyze"
             operation: Specific operation for the resource type
             params: Operation-specific parameters (optional)
             ctx: MCP context (internal)
@@ -154,10 +190,17 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
                 params = {}
 
             # Validate resource_type
-            if resource_type not in ["metrics", "alert_config", "global_alert_config", "settings", "catalog"]:
+            if resource_type not in [
+                "metrics",
+                "alert_config",
+                "global_alert_config",
+                "settings",
+                "catalog",
+                "analyze",
+            ]:
                 return {
-                    "error": f"Invalid resource_type '{resource_type}'. Must be 'metrics', 'alert_config', 'global_alert_config', 'settings', or 'catalog'",
-                    "suggestion": "Choose 'metrics' for querying data, 'alert_config' for application-specific alerts, 'global_alert_config' for global alerts, 'settings' for application perspective configurations, or 'catalog' for tag and metric catalog information"
+                    "error": f"Invalid resource_type '{resource_type}'. Must be 'metrics', 'alert_config', 'global_alert_config', 'settings', 'catalog', or 'analyze'",
+                    "suggestion": "Choose 'metrics' for querying data, 'alert_config' for application-specific alerts, 'global_alert_config' for global alerts, 'settings' for application perspective configurations, 'catalog' for tag and metric catalog information, or 'analyze' for trace analysis",
                 }
 
             # Route to the appropriate resource handler
@@ -171,10 +214,19 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
                 return await self._handle_settings(operation, params, ctx)
             elif resource_type == "catalog":
                 return await self._handle_catalog(operation, params, ctx)
+            elif resource_type == "analyze":
+                return await self._handle_analyze(operation, params, ctx)
             else:
                 return {
                     "error": f"Unsupported resource_type: {resource_type}",
-                    "supported_types": ["metrics", "alert_config", "global_alert_config", "settings", "catalog"]
+                    "supported_types": [
+                        "metrics",
+                        "alert_config",
+                        "global_alert_config",
+                        "settings",
+                        "catalog",
+                        "analyze",
+                    ],
                 }
 
         except Exception as e:
@@ -519,6 +571,94 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
             logger.error(f"Error fetching application ID: {e}", exc_info=True)
             return {"error": f"Failed to fetch application ID: {e!s}"}
 
+    async def _handle_analyze(
+        self, operation: str, params: Dict[str, Any], ctx
+    ) -> Dict[str, Any]:
+        """Handle Application Analyze operations."""
+        valid_operations = ["get_all_traces"]
+
+        if operation not in valid_operations:
+            return {
+                "error": f"Invalid operation '{operation}' for analyze",
+                "valid_operations": valid_operations,
+            }
+
+        # Handle datetime string conversion for timeFrame.to in payload
+        if "payload" in params and isinstance(params["payload"], dict):
+            payload = params["payload"]
+
+            if "timeFrame" in payload and isinstance(payload["timeFrame"], dict):
+                time_frame = payload["timeFrame"]
+
+                if "to" in time_frame and isinstance(time_frame["to"], str):
+                    result = self._convert_datetime_field(
+                        time_frame["to"],
+                        "timeFrame.to",
+                        "analyze",
+                        operation
+                    )
+
+                    # Check if conversion failed or needs elicitation
+                    if "elicitation_needed" in result or "error" in result:
+                        return result
+
+                    # Update the field with converted timestamp
+                    time_frame["to"] = result["timestamp"]
+
+        # Route to the analyze client with params
+        result = await self.app_analyze_client.execute_analyze_operation(
+            operation=operation, params=params, ctx=ctx
+        )
+
+        return {
+            "resource_type": "analyze",
+            "operation": operation,
+            "results": result,
+        }
+
+    def _convert_datetime_field(
+        self,
+        field_value: str,
+        field_name: str,
+        resource_type: str,
+        operation: str
+    ) -> Dict[str, Any]:
+        """
+        Convert datetime string field to timestamp with timezone validation.
+
+        Args:
+            field_value: The datetime string value to convert
+            field_name: Name of the field being converted (for error messages)
+            resource_type: Resource type for error context
+            operation: Operation for error context
+
+        Returns:
+            Dict with either converted timestamp or elicitation/error response
+        """
+        logger.debug(f"[_convert_datetime_field] Converting {field_name} datetime string: {field_value}")
+
+        # Check if timezone is provided, default to UTC if not
+        if "|" not in field_value:
+            datetime_str = field_value
+            timezone = "UTC"
+            logger.debug(f"[_convert_datetime_field] No timezone specified for {field_name}, defaulting to UTC")
+        else:
+            # Extract timezone if provided in format "datetime|timezone"
+            datetime_str, timezone = field_value.split("|", 1)
+
+        conversion_result = convert_to_timestamp(datetime_str.strip(), timezone.strip(), "milliseconds")
+        if "error" in conversion_result:
+            return {
+                "error": f"Failed to convert {field_name} datetime: {conversion_result['error']}",
+                "resource_type": resource_type,
+                "operation": operation
+            }
+
+        timestamp = conversion_result["timestamp"]
+        logger.info(f"[_convert_datetime_field] Converted {field_name} to timestamp: {timestamp}")
+
+        return {"success": True, "timestamp": timestamp}
+
     async def _handle_catalog(
         self,
         operation: str,
@@ -571,4 +711,3 @@ class ApplicationSmartRouterMCPTool(BaseInstanaClient):
             "error": f"Unsupported catalog operation: {operation}",
             "valid_operations": valid_operations
         }
-
