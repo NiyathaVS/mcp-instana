@@ -31,7 +31,6 @@
     - [Common Startup Issues](#common-startup-issues)
   - [Setup and Usage](#setup-and-usage)
     - [Bob IDE](#bob-ide)
-      - [MCP Configuration Scopes](#mcp-configuration-scopes)
       - [Streamable HTTP Mode](#streamable-http-mode)
       - [Stdio Mode](#stdio-mode)
     - [Claude Desktop](#claude-desktop)
@@ -448,6 +447,24 @@ uv sync
 
 Bob is IBM's AI-powered IDE that natively supports MCP integration. Bob provides a seamless development experience with built-in AI assistance and observability tools.
 
+#### Streamable HTTP Mode
+
+The Streamable HTTP mode provides a REST API interface for MCP communication using JSON-RPC over HTTP.
+
+**Step 1: Start the MCP Server in Streamable HTTP Mode**
+
+Before configuring Bob, you need to start the MCP server in Streamable HTTP mode. Please refer to the [Starting the Local MCP Server](#starting-the-local-mcp-server) section for detailed instructions.
+
+**Step 2: Configure Bob**
+
+On the top right corner of the Bob panel, you would see a dropdown with MCP servers:
+
+![](./images/bob-checking-mcp-server.png)
+
+On selecting this, you should be able to see the option to configure MCP at the project level or the global level.
+
+![](./images/bob-mcp-configuration.png)
+
 #### MCP Configuration Scopes
 
 Bob supports two levels of MCP configuration, allowing you to choose the scope that best fits your use case:
@@ -474,16 +491,6 @@ Project configuration applies MCP servers only to a specific project. This is us
 - Both configurations can coexist - project-level settings take precedence over global settings for the same server name
 
 For more information about Bob and MCP configuration, visit: https://bob.ibm.com/docs/ide/configuration/mcp/mcp-in-bob
-
-#### Streamable HTTP Mode
-
-The Streamable HTTP mode provides a REST API interface for MCP communication using JSON-RPC over HTTP.
-
-**Step 1: Start the MCP Server in Streamable HTTP Mode**
-
-Before configuring Bob, you need to start the MCP server in Streamable HTTP mode. Please refer to the [Starting the Local MCP Server](#starting-the-local-mcp-server) section for detailed instructions.
-
-**Step 2: Configure Bob**
 
 **Local Configuration:**
 
@@ -530,13 +537,17 @@ Installation instructions are available at: https://nodejs.org/en/download
 
 **Step 3: Test the Connection**
 
-Restart Bob IDE. You should now see Instana MCP Server available in the Bob interface.
+Once you set up the MCP configuration, the newly configured MCP server should appear as enabled. A green dot indicates that the server is running successfully.
 
-You can now run queries in Bob:
+![](./images/bob-mcp-server-listed.png)
+
+
+You can now run queries in Bob IDE:
 
 ```
-get me all endpoints from Instana
+get me all applications from Instana in the last 24 hours
 ```
+![](./images/bob-response.png)
 
 #### Stdio Mode
 
