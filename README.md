@@ -31,7 +31,6 @@
     - [Common Startup Issues](#common-startup-issues)
   - [Setup and Usage](#setup-and-usage)
     - [Bob IDE](#bob-ide)
-      - [MCP Configuration Scopes](#mcp-configuration-scopes)
       - [Streamable HTTP Mode](#streamable-http-mode)
       - [Stdio Mode](#stdio-mode)
     - [Claude Desktop](#claude-desktop)
