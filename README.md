@@ -457,7 +457,7 @@ Before configuring Bob, you need to start the MCP server in Streamable HTTP mode
 
 **Step 2: Configure Bob**
 
-Restart Bob IDE. On the top right corner of the Bob panel, you would see a dropdown with MCP servers:
+On the top right corner of the Bob panel, you would see a dropdown with MCP servers:
 
 ![](./images/bob-checking-mcp-server.png)
 
@@ -537,7 +537,7 @@ Installation instructions are available at: https://nodejs.org/en/download
 
 **Step 3: Test the Connection**
 
-Once you set up the MCP configuration, the newly configured MCP server should appear as enabled. A green dot indicates that the server is running successfully.:
+Once you set up the MCP configuration, the newly configured MCP server should appear as enabled. A green dot indicates that the server is running successfully.
 
 ![](./images/bob-mcp-server-listed.png)
 
