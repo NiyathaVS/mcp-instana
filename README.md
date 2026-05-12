@@ -542,7 +542,7 @@ Once you set up the MCP configuration, the newly configured MCP server should ap
 ![](./images/bob-mcp-server-listed.png)
 
 
-You can now run queries in Bob IDE in Ask Mode:
+You can now run queries in Bob IDE:
 
 ```
 get me all applications from Instana in the last 24 hours
