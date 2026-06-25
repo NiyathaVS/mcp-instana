@@ -75,6 +75,7 @@ class MCPState:
     smart_router_automation_client: Any = None
     smart_router_slo_client: Any = None
     smart_router_releases_client: Any = None
+    smart_router_maintenance_window_client: Any = None
 
     # Infrastructure - Only the new two-pass elicitation tool
     infra_analyze_new_client: Any = None
@@ -247,6 +248,9 @@ def get_client_categories():
             CustomDashboardSmartRouterMCPTool,
         )
         from src.router.events_smart_router_tool import EventsSmartRouterMCPTool
+        from src.router.maintenance_window_smart_router import (
+            MaintenanceWindowSmartRouterMCPTool,
+        )
         from src.router.mobile_app_smart_router import MobileAppSmartRouterMCPTool
         from src.router.releases_smart_router_tool import ReleasesSmartRouterMCPTool
         from src.router.slo_smart_router_tool import SLOSmartRouterMCPTool
@@ -282,6 +286,9 @@ def get_client_categories():
         ],
         "releases": [
             ('smart_router_releases_client', ReleasesSmartRouterMCPTool),
+        ],
+        "maintenance": [
+            ('smart_router_maintenance_window_client', MaintenanceWindowSmartRouterMCPTool),
         ]
     }
 
@@ -303,6 +310,9 @@ def get_prompt_categories():
             ApplicationTopologyPrompts,
         )
         from src.prompts.events.events_tools import EventsPrompts
+        from src.prompts.maintenance_window.maintenance_window_prompts import (
+            MaintenanceWindowPrompts,
+        )
         from src.prompts.mobile_app.mobile_app_alert import MobileAppAlertPrompts
         from src.prompts.mobile_app.mobile_app_analyze import MobileAppAnalyzePrompts
         from src.prompts.mobile_app.mobile_app_catalog import MobileAppCatalogPrompts
@@ -333,6 +343,7 @@ def get_prompt_categories():
     website_catalog_prompts = WebsiteCatalogPrompts.get_prompts()
     website_configuration_prompts = WebsiteConfigurationPrompts.get_prompts()
     website_metrics_prompts = WebsiteMetricsPrompts.get_prompts()
+    maintenance_window_prompts = MaintenanceWindowPrompts.get_prompts()
     mobile_app_analyze_prompts = MobileAppAnalyzePrompts.get_prompts()
     mobile_app_catalog_prompts = MobileAppCatalogPrompts.get_prompts()
     mobile_app_configuration_prompts = MobileAppConfigurationPrompts.get_prompts()
@@ -359,6 +370,9 @@ def get_prompt_categories():
         ],
         "settings": [
             ("Custom Dashboard", custom_dashboard_prompts),
+        ],
+        "maintenance": [
+            ("Maintenance Window", maintenance_window_prompts),
         ],
         "mobile_app": [
             ("Mobile App Analyze", mobile_app_analyze_prompts),
@@ -479,7 +493,7 @@ def main():
         else:
             set_log_level(args.log_level)
 
-        all_categories = {"app", "infra", "events", "automation", "website", "mobile_app", "settings", "slo", "releases"}
+        all_categories = {"app", "infra", "events", "automation", "website", "mobile_app", "settings", "slo", "releases", "maintenance"}
 
         # Handle --list-tools option
         if args.list_tools:
@@ -507,7 +521,7 @@ def main():
                 enabled = set(all_categories)
 
         if invalid:
-            logger.error(f"Error: Unknown category/categories: {', '.join(invalid)}. Available categories: app, infra, events, automation, mobile_app, website, settings, slo")
+            logger.error(f"Error: Unknown category/categories: {', '.join(invalid)}. Available categories: app, infra, events, automation, mobile_app, website, settings, slo, releases, maintenance")
             sys.exit(2)
 
         # Print enabled tools for user information
