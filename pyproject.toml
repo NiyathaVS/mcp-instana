@@ -12,7 +12,7 @@ authors = [
     {name = "Niyatha V S", email = "Niyatha.V.S1@ibm.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.15"
 license = {text = "Apache-2.0"}
 
 # ONLY dependencies that are actually imported/used in the code
