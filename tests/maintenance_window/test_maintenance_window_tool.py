@@ -135,7 +135,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
     def test_execute_operation_create(self, mock_create):
         """execute_maintenance_operation routes to _create_maintenance_window"""
         mock_create.return_value = {"status": "success", "window_id": "test-id"}
-        
+
         result = asyncio.run(self.tool.execute_maintenance_operation(
             operation="create",
             imap_code="EAL-012471",
@@ -144,7 +144,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             reason="Test",
             ctx=self.ctx
         ))
-        
+
         mock_create.assert_called_once()
         self.assertEqual(result["status"], "success")
 
@@ -152,14 +152,14 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
     def test_execute_operation_modify(self, mock_modify):
         """execute_maintenance_operation routes to _modify_maintenance_window"""
         mock_modify.return_value = {"status": "success"}
-        
+
         result = asyncio.run(self.tool.execute_maintenance_operation(
             operation="modify",
             window_id="test-id",
             duration_minutes=120,
             ctx=self.ctx
         ))
-        
+
         mock_modify.assert_called_once()
         self.assertEqual(result["status"], "success")
 
@@ -167,13 +167,13 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
     def test_execute_operation_close(self, mock_close):
         """execute_maintenance_operation routes to _close_maintenance_window"""
         mock_close.return_value = {"status": "success"}
-        
+
         result = asyncio.run(self.tool.execute_maintenance_operation(
             operation="close",
             window_id="test-id",
             ctx=self.ctx
         ))
-        
+
         mock_close.assert_called_once()
         self.assertEqual(result["status"], "success")
 
@@ -181,12 +181,12 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
     def test_execute_operation_list_active(self, mock_list):
         """execute_maintenance_operation routes to _list_active_windows"""
         mock_list.return_value = {"status": "success", "windows": []}
-        
+
         result = asyncio.run(self.tool.execute_maintenance_operation(
             operation="list_active",
             ctx=self.ctx
         ))
-        
+
         mock_list.assert_called_once()
         self.assertEqual(result["status"], "success")
 
@@ -196,7 +196,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             operation="get_templates",
             ctx=self.ctx
         ))
-        
+
         self.assertEqual(result["status"], "success")
         self.assertIn("templates", result)
 
@@ -206,7 +206,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             operation="invalid_operation",
             ctx=self.ctx
         ))
-        
+
         self.assertIn("error", result)
 
     def test_execute_operation_exception_handling(self):
@@ -217,7 +217,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
                 imap_code="EAL-012471",
                 ctx=self.ctx
             ))
-            
+
             self.assertIn("error", result)
             self.assertIn("Test error", result["error"])
 
@@ -230,7 +230,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
         """_validate_window_params returns success for valid params"""
         # Mock current timestamp to be before start_time
         mock_timestamp.return_value = {"timestamp": 1234567890000 - 1000}
-        
+
         result = asyncio.run(self.tool._validate_window_params(
             application_id="EAL-012471",
             start_time=1234567890000,
@@ -238,7 +238,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             template="deployment",
             ctx=self.ctx
         ))
-        
+
         self.assertEqual(result["status"], "valid")
         self.assertIn("message", result)
 
@@ -251,7 +251,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             template="deployment",
             ctx=self.ctx
         ))
-        
+
         self.assertEqual(result["status"], "invalid")
         self.assertIn("errors", result)
         self.assertIn("application_id", result["errors"][0])
@@ -265,7 +265,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             template="deployment",
             ctx=self.ctx
         ))
-        
+
         self.assertEqual(result["status"], "invalid")
         self.assertIn("errors", result)
         self.assertIn("start_time", result["errors"][0])
@@ -275,7 +275,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
         """_validate_window_params returns error for past start_time"""
         # Mock current timestamp to be after start_time
         mock_timestamp.return_value = {"timestamp": 1234567890000 + 1000}
-        
+
         result = asyncio.run(self.tool._validate_window_params(
             application_id="EAL-012471",
             start_time=1234567890000,
@@ -283,7 +283,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             template="deployment",
             ctx=self.ctx
         ))
-        
+
         self.assertEqual(result["status"], "invalid")
         self.assertIn("errors", result)
         self.assertIn("past", result["errors"][0])
@@ -293,7 +293,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
         """_validate_window_params returns error for invalid template"""
         # Mock current timestamp to be before start_time
         mock_timestamp.return_value = {"timestamp": 1234567890000 - 1000}
-        
+
         result = asyncio.run(self.tool._validate_window_params(
             application_id="EAL-012471",
             start_time=1234567890000,
@@ -301,7 +301,7 @@ class TestMaintenanceWindowMCPTools(unittest.TestCase):
             template="invalid_template",
             ctx=self.ctx
         ))
-        
+
         self.assertEqual(result["status"], "invalid")
         self.assertIn("errors", result)
         self.assertIn("Invalid template", result["errors"][0])
