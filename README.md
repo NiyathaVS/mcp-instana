@@ -1151,6 +1151,8 @@ Configure port forwarding to expose your local server. Follow the [Ngrok setup d
 | `manage_events`                                               | Events                         | Unified smart router for events monitoring: get event by ID, get events by IDs, Kubernetes events, agent monitoring events and all events |
 | `manage_slo`                                                  | SLO Management                 | Unified smart router for SLO configurations, reports, alerts, and correction windows with intelligent timezone handling |
 | `manage_releases`                                             | Release Management             | Unified smart router for release tracking: list releases with pagination and name filtering, get release details, create/update/delete releases with timezone support |
+| `manage_maintenance_windows`                                  | Maintenance Windows            | Unified smart router for maintenance window lifecycle management: create, modify, close, and list maintenance windows with template support and ServiceNow integration |
+| `manage_mobile_apps`                                          | Mobile App Monitoring          | Unified smart router for mobile app monitoring: analyze beacons, performance metrics, configuration, and alert management |
 
 👉 **For detailed tool documentation, capabilities, and technical reference, see [Tools & Examples](docs/TOOLS_AND_EXAMPLES.md)**
 
@@ -1209,6 +1211,25 @@ The MCP server supports selective tool loading to optimize performance and reduc
   - **Efficient Pagination**: Avoid redundant data fetching with proper page-based navigation
   - **Name Filtering**: Case-insensitive substring matching to find releases by name
 
+- **`maintenance_window`**: Maintenance window lifecycle management
+  - `manage_maintenance_windows`: Unified smart router for maintenance window operations
+  - **Window Operations**: Create, modify, close, and list maintenance windows (active, scheduled, all, expired)
+  - **Bulk Operations**: Create maintenance windows for multiple applications simultaneously
+  - **Template Support**: Predefined templates for common scenarios (deployment, database_migration, infrastructure_upgrade, emergency, routine)
+  - **Recurring Windows**: Support for recurring maintenance windows using RFC 5545 RRULE format
+  - **ServiceNow Integration**: Optional integration with ServiceNow change requests
+  - **Validation**: Parameter validation before window creation
+  - **Flexible Duration**: Specify duration in minutes, hours, or days
+
+- **`mobile_app`**: Mobile application monitoring
+  - `manage_mobile_apps`: Unified smart router for mobile app monitoring operations
+  - **Beacon Analysis**: Query mobile app beacon data with grouping and filtering
+  - **Performance Metrics**: Track session duration, crash rates, and HTTP request performance
+  - **Geographic Analysis**: Analyze user distribution by country, city, and region
+  - **Device Analysis**: Monitor performance across different devices, platforms, and OS versions
+  - **Configuration Management**: Manage mobile app configurations, geo-location, and IP masking settings
+  - **Alert Management**: Configure and manage mobile app alert configurations
+
 ### Usage Examples
 
 #### Using CLI (PyPI Installation)
@@ -1231,6 +1252,9 @@ mcp-instana --tools dashboard,router --transport streamable-http
 
 # Enable releases and events tools
 mcp-instana --tools releases,events --transport streamable-http
+
+# Enable maintenance window and events tools
+mcp-instana --tools maintenance_window,events --transport streamable-http
 
 # Enable all tools (default behavior)
 mcp-instana --transport streamable-http
@@ -1259,6 +1283,9 @@ uv run src/core/server.py --tools dashboard,router --transport streamable-http
 
 # Enable releases and events tools
 uv run src/core/server.py --tools releases,events --transport streamable-http
+
+# Enable maintenance window and events tools
+uv run src/core/server.py --tools maintenance_window,events --transport streamable-http
 
 # Enable all tools (default behavior)
 uv run src/core/server.py --transport streamable-http
