@@ -71,6 +71,17 @@
       - [Device and Platform Analysis](#device-and-platform-analysis)
       - [Configuration](#configuration-1)
       - [Alert Management](#alert-management)
+  - [10. Maintenance Window Management](#10-maintenance-window-management)
+    - [Capabilities](#capabilities-9)
+    - [Example Prompts](#example-prompts-9)
+      - [Creating Maintenance Windows](#creating-maintenance-windows)
+      - [Recurring Maintenance Windows](#recurring-maintenance-windows)
+      - [Bulk Operations](#bulk-operations)
+      - [Modifying Maintenance Windows](#modifying-maintenance-windows)
+      - [Closing Maintenance Windows](#closing-maintenance-windows)
+      - [Listing Maintenance Windows](#listing-maintenance-windows)
+      - [Template Management](#template-management)
+      - [Validation](#validation)
   - [Advanced Usage Tips](#advanced-usage-tips)
     - [Time Range Specifications](#time-range-specifications)
     - [Filtering and Grouping](#filtering-and-grouping)
@@ -870,6 +881,176 @@ List all alert configurations for mobile app ID "app-abc123"
 ---
 
 ---
+## 10. Maintenance Window Management
+
+**Tool Name:** `manage_maintenance_windows`
+
+### Capabilities
+
+Comprehensive maintenance window lifecycle management for preventing false alerts during planned operational activities. Supports creation, modification, closure, and listing of maintenance windows with template support and optional ServiceNow integration.
+
+**Resource Types:**
+- **window**: Create, modify, close, and list maintenance windows
+- **templates**: Retrieve available maintenance window templates
+
+**Window Operations:**
+- `create`: Create a new maintenance window
+- `modify`: Modify an existing maintenance window
+- `close`: Close and document a maintenance window
+- `list_active`: List all currently active maintenance windows
+- `list_scheduled`: List all upcoming scheduled maintenance windows
+- `list_all`: List all maintenance windows (active, scheduled, and expired)
+- `list_expired`: List all expired/completed maintenance windows
+- `bulk_create`: Create maintenance windows for multiple applications at once
+- `validate`: Validate maintenance window parameters without creating
+
+**Template Operations:**
+- `get`: Retrieve all available maintenance window templates
+
+**Available Templates:**
+- `deployment`: Standard deployment window (60 minutes default)
+- `database_migration`: Extended database maintenance (180 minutes default)
+- `infrastructure_upgrade`: Infrastructure changes (240 minutes default)
+- `emergency`: Emergency maintenance (120 minutes default)
+- `routine`: Routine maintenance activities (30 minutes default)
+
+### Example Prompts
+
+#### Creating Maintenance Windows
+
+```
+Create a maintenance window for application EAL-012471 starting in 2 hours for 120 minutes with reason "Database migration"
+```
+
+```
+Schedule a deployment maintenance window for IMAP code EAL-012471 starting at 2026-06-01T02:00:00Z for 2 hours
+```
+
+```
+Create a maintenance window using the deployment template for application EAL-012471 starting tomorrow at 10 AM for 1 hour
+```
+
+```
+Schedule an emergency maintenance window for EAL-012471 starting now for 90 minutes with change request CHG0012345
+```
+
+#### Recurring Maintenance Windows
+
+```
+Create a recurring maintenance window for EAL-012471 every day at 2 AM for 30 minutes until June 30th
+```
+
+```
+Schedule a weekly maintenance window for ORZ-000012 every Sunday at midnight for 2 hours
+```
+
+```
+Create a monthly maintenance window on the first Monday of each month for application EAL-012471
+```
+
+#### Bulk Operations
+
+```
+Create maintenance windows for applications EAL-012471, ORZ-000012, and MUR-123456 starting in 1 hour for 2 hours
+```
+
+```
+Schedule coordinated deployment windows for IMAP codes EAL-012471 and ORZ-000012 starting at 2026-06-01T02:00:00Z
+```
+
+```
+Create maintenance windows for multiple applications using the infrastructure_upgrade template
+```
+
+#### Modifying Maintenance Windows
+
+```
+Extend maintenance window mw-789 by 60 minutes
+```
+
+```
+Modify maintenance window mw-789 to end at 2026-06-01T06:00:00Z
+```
+
+```
+Update maintenance window mw-789 with reason "Extended due to complications"
+```
+
+```
+Change the recurrence of maintenance window mw-789 to run every 2 days
+```
+
+#### Closing Maintenance Windows
+
+```
+Close maintenance window mw-789
+```
+
+```
+Close maintenance window mw-789 with completion notes "Migration completed successfully"
+```
+
+```
+Close maintenance window mw-789 with notes "Completed with issues - rollback performed"
+```
+
+#### Listing Maintenance Windows
+
+```
+Show me all active maintenance windows
+```
+
+```
+List all scheduled maintenance windows for application EAL-012471
+```
+
+```
+Show me all maintenance windows (active, scheduled, and expired) for IMAP code EAL-012471
+```
+
+```
+List all expired maintenance windows for application EAL-012471
+```
+
+```
+Show me all currently active maintenance windows across all applications
+```
+
+#### Template Management
+
+```
+Show me all available maintenance window templates
+```
+
+```
+What are the predefined maintenance window templates?
+```
+
+```
+Get details about maintenance window templates including default durations
+```
+
+#### Validation
+
+```
+Validate maintenance window parameters for application EAL-012471 starting in 2 hours for 120 minutes
+```
+
+```
+Check if I can create a maintenance window for EAL-012471 using the deployment template
+```
+
+**Important Notes:**
+- Start times can be specified as Unix timestamps (milliseconds), ISO strings, or natural language (e.g., "in 2 hours", "tomorrow at 10 AM")
+- Duration can be specified in minutes, hours, or days using `duration_minutes`, `duration_hours`, or `duration_days`
+- Templates provide predefined configurations for common maintenance scenarios
+- Recurring windows use RFC 5545 RRULE format (e.g., "FREQ=DAILY;INTERVAL=1")
+- ServiceNow integration is optional and requires configuration
+- Use `imap_code` (e.g., "EAL-012471") or `application_id` to identify applications
+- Bulk operations support comma-separated lists or JSON arrays
+
+---
+
 
 ## Advanced Usage Tips
 
