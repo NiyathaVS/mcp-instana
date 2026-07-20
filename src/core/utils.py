@@ -4,6 +4,7 @@ Base Instana API Client Module
 This module provides the base client for interacting with the Instana API.
 """
 
+import json
 import logging
 import sys
 from functools import wraps
@@ -15,6 +16,57 @@ from src.core.api_headers import build_instana_api_headers
 
 # Set up logger
 logger = logging.getLogger(__name__)
+
+
+def parse_payload(payload: Union[Dict[str, Any], str, None]) -> Union[Dict[str, Any], Dict[str, str]]:
+    """
+    Parse payload from string or dict format.
+
+    This utility function handles payload parsing with multiple fallback strategies:
+    1. If payload is None or empty, returns error
+    2. If payload is already a dict, returns it as-is
+    3. If payload is a string, attempts to parse as JSON
+    4. If JSON parsing fails, attempts to parse as Python literal (ast.literal_eval)
+    5. If all parsing fails, returns error dict
+
+    Args:
+        payload: Payload as dict, JSON string, or Python literal string
+
+    Returns:
+        Parsed dict if successful, error dict with 'error' key otherwise
+
+    Examples:
+        >>> parse_payload('{"key": "value"}')
+        {'key': 'value'}
+
+        >>> parse_payload("{'key': 'value'}")
+        {'key': 'value'}
+
+        >>> parse_payload({'key': 'value'})
+        {'key': 'value'}
+
+        >>> parse_payload(None)
+        {'error': 'payload is required'}
+    """
+    if not payload:
+        return {"error": "payload is required"}
+
+    if isinstance(payload, dict):
+        return payload
+
+    if isinstance(payload, str):
+        # Try JSON parsing first
+        try:
+            return json.loads(payload)
+        except json.JSONDecodeError:
+            # Fall back to Python literal evaluation
+            try:
+                import ast
+                return ast.literal_eval(payload)
+            except (ValueError, SyntaxError) as e:
+                return {"error": f"Invalid payload format: {e!s}"}
+
+    return {"error": f"Payload must be dict or JSON string, got {type(payload).__name__}"}
 
 # Import MCP dependencies
 from fastmcp import Context
@@ -32,7 +84,7 @@ try:
     __version__ = version("mcp-instana")
 except Exception:
     # Fallback version if package metadata is not available
-    __version__ = "0.9.9"
+    __version__ = "0.9.6"
 
 # Registry to store all tools
 MCP_TOOLS = {}
@@ -565,9 +617,44 @@ def decode_response(response) -> str:
         return response.data.decode(DEFAULT_CHARSET, errors='replace')
 
 
+def _extract_tag_name_from_dict(node, tag_names):
+    """Extract tag name from a dict node if present."""
+    tag_name = node.get("tagName")
+    if not tag_name:
+        return
+
+    # For infrastructure catalog format with type TAG
+    if node.get("type") == "TAG":
+        if tag_name not in tag_names:
+            tag_names.append(tag_name)
+    else:
+        # For website/mobile app catalogs
+        tag_names.append(tag_name)
+
+
+def _process_dict_children(node, tag_names):
+    """Process children, tagTree, and tags arrays in a dict node."""
+    # Process children array
+    children = node.get("children")
+    if isinstance(children, list):
+        for child in children:
+            extract_tag_names_from_tree(child, tag_names)
+
+    # Process tagTree (infrastructure catalog)
+    if "tagTree" in node:
+        extract_tag_names_from_tree(node["tagTree"], tag_names)
+
+    # Process tags array (alternative structure)
+    tags = node.get("tags")
+    if isinstance(tags, list):
+        for tag in tags:
+            extract_tag_names_from_tree(tag, tag_names)
+
+
 def extract_tag_names_from_tree(node, tag_names=None):
     """
     Recursively extract tag names from nested tree structure.
+    Handles multiple tag catalog formats (infrastructure, website, mobile app).
 
     Args:
         node: The tree node (dict or list) to extract tag names from
@@ -580,16 +667,9 @@ def extract_tag_names_from_tree(node, tag_names=None):
         tag_names = []
 
     if isinstance(node, dict):
-        # If this node has a tagName, add it
-        if node.get("tagName"):
-            tag_names.append(node["tagName"])
-
-        # Recursively process children
-        if "children" in node and isinstance(node["children"], list):
-            for child in node["children"]:
-                extract_tag_names_from_tree(child, tag_names)
+        _extract_tag_name_from_dict(node, tag_names)
+        _process_dict_children(node, tag_names)
     elif isinstance(node, list):
-        # If it's a list, process each item
         for item in node:
             extract_tag_names_from_tree(item, tag_names)
 
@@ -656,6 +736,26 @@ def project_metric_card(metric: Dict[str, Any]) -> Dict[str, Any]:
         "beaconTypes": metric.get("beaconTypes") or [],
         "formatter": metric.get("formatter"),
     }
+
+
+WEBSITE_BEACON_TYPE_MAP = {
+    "PAGELOAD": "pageLoad",
+    "PAGE_CHANGE": "pageChange",
+    "RESOURCELOAD": "resourceLoad",
+    "CUSTOM": "custom",
+    "HTTPREQUEST": "httpRequest",
+    "ERROR": "error",
+}
+
+MOBILE_BEACON_TYPE_MAP = {
+    "SESSION_START": "sessionStart",
+    "VIEW_CHANGE": "viewChange",
+    "HTTP_REQUEST": "httpRequest",
+    "CUSTOM": "custom",
+    "CRASH": "crash",
+    "PERF": "perf",
+    "DROP_BEACON": "dropBeacon",
+}
 
 
 def normalize_beacon_type(beacon_type: str, beacon_type_map: Dict[str, str]) -> str:

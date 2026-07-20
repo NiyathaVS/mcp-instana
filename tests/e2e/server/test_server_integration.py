@@ -735,7 +735,6 @@ class TestMCPServerIntegrationE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.mocked
-    @pytest.mark.skip(reason="Test has isolation issues in full suite - passes individually")
     async def test_main_function_keyboard_interrupt(self, instana_credentials):
         """Test main function with keyboard interrupt."""
         from src.core.server import main
@@ -760,7 +759,6 @@ class TestMCPServerIntegrationE2E:
                                 with suppress(SystemExit):
                                     main()
 
-                                # KeyboardInterrupt should exit with 0 (graceful shutdown)
                                 mock_exit.assert_called_with(0)
 
     @pytest.mark.asyncio

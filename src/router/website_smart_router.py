@@ -12,7 +12,12 @@ from fastmcp import Context
 from mcp.types import ToolAnnotations
 
 from src.core.timestamp_utils import convert_nested_datetime_param
-from src.core.utils import BaseInstanaClient, normalize_beacon_type, register_as_tool
+from src.core.utils import (
+    WEBSITE_BEACON_TYPE_MAP,
+    BaseInstanaClient,
+    normalize_beacon_type,
+    register_as_tool,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +111,7 @@ CATALOG (resource_type="catalog"):
 
     get_metrics - Get website metrics catalog with necessary metadata for query planning (metricId, label, description, formatter, aggregations, beaconTypes). Use returned metricId values exactly; they are authoritative over examples. Use params.view="full" to retrieve raw SDK metadata (rarely needed).
     get_tag_catalog - Get valid tag names for beacon_type and use_case
-        Valid beacon_type: "PAGELOAD", "PAGECHANGE", "RESOURCELOAD", "CUSTOM", "HTTPREQUEST", "ERROR"
+        Valid beacon_type: "PAGELOAD", "PAGE_CHANGE", "RESOURCELOAD", "CUSTOM", "HTTPREQUEST", "ERROR"
         Valid use_case: "GROUPING", "FILTERING", "SERVICE_MAPPING", "SMART_ALERTS", etc.
 
 CONFIGURATION (resource_type="configuration"):
@@ -345,16 +350,7 @@ Examples:
             )
 
             # Normalize beacon_type to camelCase format (API expects camelCase)
-            beacon_type_map = {
-                "PAGELOAD": "pageLoad",
-                "PAGECHANGE": "pageChange",
-                "RESOURCELOAD": "resourceLoad",
-                "CUSTOM": "custom",
-                "HTTPREQUEST": "httpRequest",
-                "ERROR": "error"
-            }
-
-            normalized_beacon_type = normalize_beacon_type(beacon_type, beacon_type_map)
+            normalized_beacon_type = normalize_beacon_type(beacon_type, WEBSITE_BEACON_TYPE_MAP)
             if beacon_type != normalized_beacon_type:
                 logger.debug(f"Normalized beacon_type from '{beacon_type}' to '{normalized_beacon_type}'")
                 beacon_type = normalized_beacon_type
